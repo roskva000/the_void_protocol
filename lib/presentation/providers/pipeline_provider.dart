@@ -1,0 +1,75 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/entities/awareness.dart';
+import '../../domain/entities/noise.dart';
+import '../../domain/entities/filter.dart';
+import '../../domain/entities/signal.dart';
+
+class PipelineState {
+  final Noise noise;
+  final Filter filter;
+  final Signal signal;
+  final Awareness awareness;
+
+  const PipelineState({
+    this.noise = const Noise(),
+    this.filter = const Filter(),
+    this.signal = const Signal(),
+    this.awareness = const Awareness(),
+  });
+
+  PipelineState copyWith({
+    Noise? noise,
+    Filter? filter,
+    Signal? signal,
+    Awareness? awareness,
+  }) {
+    return PipelineState(
+      noise: noise ?? this.noise,
+      filter: filter ?? this.filter,
+      signal: signal ?? this.signal,
+      awareness: awareness ?? this.awareness,
+    );
+  }
+}
+
+class PipelineNotifier extends Notifier<PipelineState> {
+  @override
+  PipelineState build() {
+    return const PipelineState();
+  }
+
+  void setInitialState(PipelineState loadedState) {
+    state = loadedState;
+  }
+
+  // Updates from the game loop tick
+  void updateFromTick({
+    required double addedNoise,
+    required double filterConsumed,
+    required double addedSignal,
+  }) {
+    state = state.copyWith(
+      noise: state.noise.copyWith(
+        currentAmount: state.noise.currentAmount + addedNoise - filterConsumed,
+      ),
+      signal: state.signal.copyWith(
+        currentAmount: state.signal.currentAmount + addedSignal,
+        lifetimeProduced: state.signal.lifetimeProduced + addedSignal,
+      ),
+    );
+  }
+
+  // Example of manual interaction
+  void manualTap() {
+    state = state.copyWith(
+      noise: state.noise.copyWith(
+        currentAmount:
+            state.noise.currentAmount + state.noise.baseProductionPerSecond,
+      ),
+    );
+  }
+}
+
+final pipelineProvider = NotifierProvider<PipelineNotifier, PipelineState>(() {
+  return PipelineNotifier();
+});
