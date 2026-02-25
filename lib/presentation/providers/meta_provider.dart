@@ -7,12 +7,16 @@ class MetaState {
   final TechTree techTree;
   final double remnantData; // Prestige currency
   final double momentum; // Global speed multiplier
+  final bool isCrashed; // If true, production is halted
+  final DateTime? crashEndTime;
 
   const MetaState({
     this.overheat = const Overheat(),
     this.techTree = const TechTree(),
     this.remnantData = 0.0,
     this.momentum = 1.0,
+    this.isCrashed = false,
+    this.crashEndTime,
   });
 
   MetaState copyWith({
@@ -20,12 +24,16 @@ class MetaState {
     TechTree? techTree,
     double? remnantData,
     double? momentum,
+    bool? isCrashed,
+    DateTime? crashEndTime,
   }) {
     return MetaState(
       overheat: overheat ?? this.overheat,
       techTree: techTree ?? this.techTree,
       remnantData: remnantData ?? this.remnantData,
       momentum: momentum ?? this.momentum,
+      isCrashed: isCrashed ?? this.isCrashed,
+      crashEndTime: crashEndTime ?? this.crashEndTime,
     );
   }
 }
@@ -40,21 +48,42 @@ class MetaNotifier extends Notifier<MetaState> {
     state = loadedState;
   }
 
-  void updateOverheat(double addedOverheat) {
-    double newPool = state.overheat.currentPool + addedOverheat;
-    bool newThrottlingState = state.overheat.isThrottling;
-
-    if (newPool >= state.overheat.maxTolerance) {
-      newThrottlingState = true;
+  void updateOverheat(double addedOverheat, double dt) {
+    if (state.isCrashed) {
+      if (state.crashEndTime != null &&
+          DateTime.now().isAfter(state.crashEndTime!)) {
+        state = state.copyWith(
+          isCrashed: false,
+          overheat: state.overheat.copyWith(currentPool: 0),
+          crashEndTime: null,
+        );
+      }
+      return;
     }
-    // Cooling logic if overheat drops to 0 could be placed here or in pipeline
 
-    state = state.copyWith(
-      overheat: state.overheat.copyWith(
-        currentPool: newPool,
-        isThrottling: newThrottlingState,
-      ),
-    );
+    double newPool = state.overheat.currentPool + addedOverheat;
+    // Natural cooling if no heat added this tick (simplified)
+    if (addedOverheat <= 0) {
+      newPool -= 5.0 * dt; // Cooling rate
+    }
+
+    if (newPool < 0) newPool = 0;
+
+    if (newPool >= 100.0) {
+      // System Crash!
+      state = state.copyWith(
+        isCrashed: true,
+        crashEndTime: DateTime.now().add(const Duration(seconds: 30)),
+        overheat: state.overheat.copyWith(currentPool: 100.0),
+      );
+    } else {
+      state = state.copyWith(
+        overheat: state.overheat.copyWith(
+          currentPool: newPool,
+          isThrottling: newPool > 80.0, // Throttling warning zone
+        ),
+      );
+    }
   }
 
   void addMomentum(double amount) {
@@ -75,6 +104,8 @@ class MetaNotifier extends Notifier<MetaState> {
       remnantData: state.remnantData + reward,
       overheat: const Overheat(),
       momentum: 1.0,
+      isCrashed: false,
+      crashEndTime: null,
     );
   }
 

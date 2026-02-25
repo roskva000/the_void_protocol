@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../core/constants/app_colors.dart';
 import '../../core/engine/game_loop.dart';
-import '../../core/utils/haptics.dart';
 import '../providers/pipeline_provider.dart';
-import '../providers/upgrades_provider.dart';
 import '../providers/meta_provider.dart';
-import '../providers/story_provider.dart';
-import '../widgets/animated_number.dart';
-import '../widgets/glass_panel.dart';
-import '../widgets/story_log_widget.dart';
+import '../widgets/visuals/particle_background.dart';
+import '../widgets/visuals/cyber_panel.dart';
+import '../widgets/visuals/glitch_text.dart';
+import 'tabs/terminal_tab.dart';
+import 'tabs/systems_tab.dart';
+import 'tabs/network_tab.dart';
+import 'tabs/black_market_tab.dart';
+import '../../l10n/app_localizations.dart';
 
 class MainGameScreen extends ConsumerStatefulWidget {
   const MainGameScreen({super.key});
@@ -20,317 +21,225 @@ class MainGameScreen extends ConsumerStatefulWidget {
   ConsumerState<MainGameScreen> createState() => _MainGameScreenState();
 }
 
-class _MainGameScreenState extends ConsumerState<MainGameScreen> {
-  bool _isPrestigeFlashing = false;
+class _MainGameScreenState extends ConsumerState<MainGameScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    // Start engine loop on boot
+    _tabController = TabController(length: 4, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(gameLoopProvider).start();
     });
   }
 
-  void _showPrestigeFlash() {
-    setState(() {
-      _isPrestigeFlashing = true;
-    });
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted) {
-        setState(() {
-          _isPrestigeFlashing = false;
-        });
-      }
-    });
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Specifically watch the values we need to avoid rebuilding the entire screen.
-    // E.g. ref.watch(pipelineProvider.select((state) => state.noise.currentAmount));
     final noiseAmount = ref.watch(
       pipelineProvider.select((s) => s.noise.currentAmount),
     );
     final signalAmount = ref.watch(
       pipelineProvider.select((s) => s.signal.currentAmount),
     );
-
-    final generatorCount = ref.watch(
-      upgradesProvider.select((s) => s.generatorCount),
-    );
-    final nextGenCost = ref.watch(
-      upgradesProvider.select((s) => s.nextGeneratorCost),
-    );
-
-    final filterCount = ref.watch(
-      upgradesProvider.select((s) => s.filterCount),
-    );
-    final nextFiltCost = ref.watch(
-      upgradesProvider.select((s) => s.nextFilterCost),
-    );
-
-    final isThrottling = ref.watch(
-      metaProvider.select((s) => s.overheat.isThrottling),
-    );
-
-    // Watch for Prestige triggers
-    ref.listen(metaProvider.select((s) => s.remnantData), (prev, next) {
-      if (prev != null && next > prev) {
-        // Prestige occurred, Remnant Data increased!
-        Haptics.heavy();
-        _showPrestigeFlash();
-      }
-    });
+    final meta = ref.watch(metaProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.deepCharcoal,
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Basic Red Gradient for Overheat
-          if (isThrottling)
+          // 1. Background Layer
+          const Positioned.fill(
+            child: ParticleBackground(
+              color: Color(0xFF00E5FF),
+              particleCount: 30,
+            ),
+          ),
+
+          // 2. Overheat / Crash Layer
+          if (meta.isCrashed)
             Positioned.fill(
-              child: AnimatedContainer(
-                duration: const Duration(seconds: 1),
-                curve: Curves.easeInOut,
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    colors: [
-                      Colors.transparent,
-                      AppColors.glitchRed.withValues(alpha: 0.3),
-                    ],
-                    radius: 1.5,
+              child: Container(
+                color: Colors.red.withValues(alpha: 0.1),
+                child: Center(
+                  child: GlitchText(
+                    l10n.systemCrash,
+                    style: GoogleFonts.spaceMono(
+                      color: Colors.red,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    isCorrupted: true,
                   ),
                 ),
               ),
             ),
 
+          // 3. Main Interface Layer
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // --- HEADER: Resource Pipeline ---
-                  GlassPanel(
-                    height: 120,
+            child: Column(
+              children: [
+                // -- Header: Resources --
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  child: CyberPanel(
+                    height: 80,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildResourceColumn(
-                          'NOISE',
-                          noiseAmount,
-                          AppColors.textSecondary,
+                        _ResourceItem(
+                          label: l10n.noise,
+                          value: noiseAmount,
+                          color: Colors.grey,
                         ),
-                        const Icon(
-                          Icons.arrow_forward_ios,
-                          color: AppColors.neonBlue,
-                          size: 16,
+                        _ResourceItem(
+                          label: l10n.signal,
+                          value: signalAmount,
+                          color: const Color(0xFF00E5FF),
                         ),
-                        _buildResourceColumn(
-                          'SIGNAL',
-                          signalAmount,
-                          AppColors.neonBlue,
+                        _ResourceItem(
+                          label: "HEAT",
+                          value: meta.overheat.currentPool,
+                          color: meta.overheat.isThrottling
+                              ? Colors.red
+                              : Colors.orange,
+                          suffix: "%",
                         ),
                       ],
                     ),
                   ),
+                ),
 
-                  const SizedBox(height: 24),
-
-                  // --- BODY: Upgrades ---
-                  Expanded(
-                    child: GlassPanel(
-                      child: Column(
-                        children: [
-                          Text(
-                            'UPGRADES',
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              color: AppColors.textPrimary,
-                              letterSpacing: 2,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Generator Purchase Button
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              side: const BorderSide(color: AppColors.neonBlue),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                                horizontal: 24,
-                              ),
-                            ),
-                            onPressed: () {
-                              ref.read(pipelineProvider.notifier).manualTap();
-                              Haptics.light();
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Generate Noise (Manual)',
-                                  style: GoogleFonts.spaceMono(
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                const Icon(
-                                  Icons.touch_app,
-                                  color: AppColors.neonBlue,
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.glassWhite,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                                horizontal: 24,
-                              ),
-                            ),
-                            onPressed: () {
-                              bool success = ref
-                                  .read(upgradesProvider.notifier)
-                                  .buyGenerator();
-                              if (success) {
-                                Haptics.medium();
-                              } else {
-                                Haptics.error();
-                              }
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Generator LVL $generatorCount',
-                                  style: GoogleFonts.inter(
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                Text(
-                                  'COST: ${nextGenCost.toStringAsFixed(0)}',
-                                  style: GoogleFonts.spaceMono(
-                                    color: AppColors.rustedBronze,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.glassWhite,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                                horizontal: 24,
-                              ),
-                            ),
-                            onPressed: () {
-                              bool success = ref
-                                  .read(upgradesProvider.notifier)
-                                  .buyFilter();
-                              if (success) {
-                                Haptics.medium();
-                              } else {
-                                Haptics.error();
-                              }
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Filter LVL $filterCount',
-                                  style: GoogleFonts.inter(
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                Text(
-                                  'COST: ${nextFiltCost.toStringAsFixed(0)}',
-                                  style: GoogleFonts.spaceMono(
-                                    color: AppColors.rustedBronze,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const Spacer(),
-
-                          // Test button to force story log for debugging
-                          TextButton(
-                            onPressed: () {
-                              ref
-                                  .read(storyProvider.notifier)
-                                  .addLog("Hello World, I am awakening.");
-                            },
-                            child: const Text(
-                              'Simulate Story Trigger',
-                              style: TextStyle(color: Colors.white24),
-                            ),
-                          ),
-                        ],
+                // -- Custom Tab Bar --
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  height: 48,
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
                       ),
                     ),
                   ),
-                ],
-              ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicatorColor: const Color(0xFF00E5FF),
+                    labelColor: const Color(0xFF00E5FF),
+                    unselectedLabelColor: Colors.grey,
+                    labelStyle: GoogleFonts.spaceMono(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    tabs: [
+                      Tab(text: l10n.tabTerminal),
+                      Tab(text: l10n.tabSystems),
+                      Tab(text: l10n.tabNetwork),
+                      Tab(text: l10n.tabBlackMarket),
+                    ],
+                  ),
+                ),
+
+                // -- Tab View Content --
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: const [
+                        TerminalTab(),
+                        SystemsTab(),
+                        NetworkTab(),
+                        BlackMarketTab(),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // -- Global Actions (e.g. Manual Click) --
+                if (!meta.isCrashed)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 60,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          side: const BorderSide(
+                            color: Color(0xFF00E5FF),
+                            width: 2,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        onPressed: () {
+                          ref.read(pipelineProvider.notifier).manualTap();
+                        },
+                        child: Text(
+                          l10n.manualGen.toUpperCase(),
+                          style: GoogleFonts.spaceMono(
+                            color: const Color(0xFF00E5FF),
+                            fontSize: 16,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
-
-          // --- FOOTER: Terminal Story Logs ---
-          const Positioned(
-            left: 16,
-            right: 16,
-            bottom: 32,
-            child: StoryLogWidget(),
-          ),
-
-          // --- PRESTIGE FLASH OVERLAY ---
-          if (_isPrestigeFlashing)
-            Positioned.fill(
-              child: TweenAnimationBuilder<double>(
-                tween: Tween<double>(begin: 0.0, end: 1.0),
-                duration: const Duration(milliseconds: 100),
-                builder: (context, val, child) {
-                  return Opacity(
-                    opacity: val,
-                    child: Container(color: Colors.white),
-                  );
-                },
-              ),
-            ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildResourceColumn(String label, double amount, Color accentColor) {
+class _ResourceItem extends StatelessWidget {
+  final String label;
+  final double value;
+  final Color color;
+  final String suffix;
+
+  const _ResourceItem({
+    required this.label,
+    required this.value,
+    required this.color,
+    this.suffix = "",
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           label,
           style: GoogleFonts.inter(
-            fontSize: 12,
-            color: AppColors.textSecondary,
-            letterSpacing: 2,
+            fontSize: 10,
+            color: Colors.grey,
+            letterSpacing: 1,
           ),
         ),
-        const SizedBox(height: 8),
-        AnimatedNumber(
-          value: amount,
+        const SizedBox(height: 4),
+        Text(
+          "${value.toStringAsFixed(0)}$suffix",
           style: GoogleFonts.spaceMono(
-            fontSize: 32,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: accentColor,
+            color: color,
           ),
         ),
       ],

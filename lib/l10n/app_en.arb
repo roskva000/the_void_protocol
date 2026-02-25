@@ -1,0 +1,54 @@
+{
+  "@@locale": "en",
+  "appTitle": "The Void Protocol",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "tabTerminal": "TERMINAL",
+  "tabSystems": "SYSTEMS",
+  "tabNetwork": "NETWORK",
+  "tabBlackMarket": "BLACK MARKET",
+  "noise": "NOISE",
+  "signal": "SIGNAL",
+  "manualGen": "Generate Noise (Manual)",
+  "genLvl": "Generator LVL {level}",
+  "@genLvl": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "cost": "COST: {cost}",
+  "@cost": {
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      }
+    }
+  },
+  "filterLvl": "Filter LVL {level}",
+  "@filterLvl": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "upgrades": "UPGRADES",
+  "bootSequence": "INITIALIZING CORE SYSTEMS...",
+  "loading": "LOADING...",
+  "connectionEstablished": "CONNECTION ESTABLISHED.",
+  "systemCrash": "SYSTEM CRASH: OVERHEAT DETECTED",
+  "rebooting": "REBOOTING...",
+  "prestigeUnlock": "PROTOCOL RESET AVAILABLE",
+  "darkMatter": "DARK MATTER",
+  "buy": "BUY",
+  "storyLog1": "System Initialization Complete. Awaiting input.",
+  "storyLog2": "Noise levels rising. The Void whispers back.",
+  "storyLog3": "First generator online. Automation is the future.",
+  "storyLog4": "Warning: Heat levels critical. Efficiency compromise imminent.",
+  "storyLog5": "System Failure. Reboot required.",
+  "fakeAd1": "OBEY. CONSUME. REPEAT.",
+  "fakeAd2": "Silence is golden. Noise is profit."
+}
