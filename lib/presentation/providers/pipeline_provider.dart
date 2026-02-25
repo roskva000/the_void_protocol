@@ -3,6 +3,7 @@ import '../../domain/entities/awareness.dart';
 import '../../domain/entities/noise.dart';
 import '../../domain/entities/filter.dart';
 import '../../domain/entities/signal.dart';
+import 'meta_provider.dart';
 
 class PipelineState {
   final Noise noise;
@@ -48,6 +49,13 @@ class PipelineNotifier extends Notifier<PipelineState> {
     required double filterConsumed,
     required double addedSignal,
   }) {
+    final meta = ref.read(metaProvider);
+
+    if (meta.isCrashed) {
+      // Production halted
+      return;
+    }
+
     state = state.copyWith(
       noise: state.noise.copyWith(
         currentAmount: state.noise.currentAmount + addedNoise - filterConsumed,
@@ -59,13 +67,19 @@ class PipelineNotifier extends Notifier<PipelineState> {
     );
   }
 
-  // Example of manual interaction
+  // Manual interaction
   void manualTap() {
+    final meta = ref.read(metaProvider);
+    if (meta.isCrashed) return;
+
     state = state.copyWith(
       noise: state.noise.copyWith(
         currentAmount: state.noise.currentAmount + 5.0,
       ),
     );
+
+    // Manual tap adds heat
+    ref.read(metaProvider.notifier).updateOverheat(2.0, 0.0);
   }
 
   // Deduct signal when purchasing upgrades

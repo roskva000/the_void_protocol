@@ -59,7 +59,10 @@ class EngineNotifier extends Notifier<double> {
     if (tickResult.overheatGenerated > 0) {
       ref
           .read(metaProvider.notifier)
-          .updateOverheat(tickResult.overheatGenerated);
+          .updateOverheat(tickResult.overheatGenerated, dt);
+    } else {
+      // Natural cooling
+      ref.read(metaProvider.notifier).updateOverheat(0.0, dt);
     }
 
     // Momentum decay (if applicable)

@@ -11,10 +11,12 @@ import 'domain/entities/overheat.dart';
 import 'domain/entities/signal.dart';
 import 'domain/entities/awareness.dart';
 import 'domain/entities/tech_tree.dart';
+import 'l10n/app_localizations.dart';
 import 'presentation/providers/meta_provider.dart';
 import 'presentation/providers/pipeline_provider.dart';
 import 'presentation/providers/upgrades_provider.dart';
-import 'presentation/screens/main_game_screen.dart';
+import 'presentation/providers/locale_provider.dart';
+import 'presentation/screens/boot_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -142,7 +144,7 @@ class _MainAppState extends ConsumerState<MainApp> {
         if (result.overheatGenerated > 0) {
           ref
               .read(metaProvider.notifier)
-              .updateOverheat(result.overheatGenerated);
+              .updateOverheat(result.overheatGenerated, 0.0);
         }
       }
     }
@@ -213,7 +215,7 @@ class _MainAppState extends ConsumerState<MainApp> {
         if (result.overheatGenerated > 0) {
           ref
               .read(metaProvider.notifier)
-              .updateOverheat(result.overheatGenerated);
+              .updateOverheat(result.overheatGenerated, 0.0);
         }
       }
     }
@@ -221,11 +223,16 @@ class _MainAppState extends ConsumerState<MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    final currentLocale = ref.watch(localeProvider);
+
     return MaterialApp(
       title: 'The Void Protocol',
       theme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
-      home: const MainGameScreen(),
+      locale: currentLocale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const BootScreen(),
     );
   }
 }
