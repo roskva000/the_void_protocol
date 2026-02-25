@@ -10,10 +10,10 @@ class UpgradesState {
   final double nextFilterCost;
 
   const UpgradesState({
-    this.generatorCount = 0,
-    this.filterCount = 0,
-    this.nextGeneratorCost = 10.0, // Base generator cost
-    this.nextFilterCost = 50.0, // Base filter cost
+    this.generatorCount = 1,
+    this.filterCount = 1,
+    this.nextGeneratorCost = 11.5, // Base 10.0 * 1.15^1
+    this.nextFilterCost = 60.0, // Base 50.0 * 1.20^1
   });
 
   UpgradesState copyWith({
@@ -62,8 +62,8 @@ class UpgradesNotifier extends Notifier<UpgradesState> {
 
   // Returns true if successful, false if not enough balance.
   // The UI should NOT check balance. The UI just calls this and reacts to the result.
-  bool buyGenerator(double currentAwareness) {
-    if (currentAwareness >= state.nextGeneratorCost) {
+  bool buyGenerator(double currentSignal) {
+    if (currentSignal >= state.nextGeneratorCost) {
       int newCount = state.generatorCount + 1;
       state = state.copyWith(
         generatorCount: newCount,
@@ -78,8 +78,8 @@ class UpgradesNotifier extends Notifier<UpgradesState> {
     return false;
   }
 
-  bool buyFilter(double currentAwareness) {
-    if (currentAwareness >= state.nextFilterCost) {
+  bool buyFilter(double currentSignal) {
+    if (currentSignal >= state.nextFilterCost) {
       int newCount = state.filterCount + 1;
       state = state.copyWith(
         filterCount: newCount,

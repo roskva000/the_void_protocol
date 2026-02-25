@@ -16,45 +16,45 @@ void main() {
 
     test('Initial state uses correctly calculated starting costs', () {
       final state = container.read(upgradesProvider);
-      expect(state.generatorCount, equals(0));
-      expect(state.filterCount, equals(0));
-      expect(state.nextGeneratorCost, equals(10.0));
-      expect(state.nextFilterCost, equals(50.0));
+      expect(state.generatorCount, equals(1));
+      expect(state.filterCount, equals(1));
+      expect(state.nextGeneratorCost, equals(11.5));
+      expect(state.nextFilterCost, equals(60.0));
     });
 
-    test('buyGenerator fails if awareness is too low', () {
-      // Base cost is 10.0, we provide 5.0
+    test('buyGenerator fails if signal is too low', () {
+      // Base cost is 11.5, we provide 5.0
       bool success = container
           .read(upgradesProvider.notifier)
           .buyGenerator(5.0);
       expect(success, isFalse);
 
       final state = container.read(upgradesProvider);
-      expect(state.generatorCount, equals(0)); // Still 0
+      expect(state.generatorCount, equals(1)); // Still 1
     });
 
-    test('buyGenerator succeeds and escalates cost if awareness is enough', () {
-      // Base cost is 10.0, we provide 10.0
+    test('buyGenerator succeeds and escalates cost if signal is enough', () {
+      // Base cost is 11.5, we provide 11.5
       bool success = container
           .read(upgradesProvider.notifier)
-          .buyGenerator(10.0);
+          .buyGenerator(11.5);
       expect(success, isTrue);
 
       final state = container.read(upgradesProvider);
-      expect(state.generatorCount, equals(1));
-      // Next cost should be 10 * 1.15 = 11.5
-      expect(state.nextGeneratorCost, equals(11.5));
+      expect(state.generatorCount, equals(2));
+      // Next cost should be 10 * 1.15^2 = 13.225
+      expect(state.nextGeneratorCost, closeTo(13.225, 0.001));
     });
 
-    test('buyFilter succeeds and escalates cost if awareness is enough', () {
-      // Base filter cost is 50.0, we provide 100.0
+    test('buyFilter succeeds and escalates cost if signal is enough', () {
+      // Base filter cost is 60.0, we provide 100.0
       bool success = container.read(upgradesProvider.notifier).buyFilter(100.0);
       expect(success, isTrue);
 
       final state = container.read(upgradesProvider);
-      expect(state.filterCount, equals(1));
-      // Next cost should be 50 * 1.20 = 60.0
-      expect(state.nextFilterCost, equals(60.0));
+      expect(state.filterCount, equals(2));
+      // Next cost should be 50 * 1.20^2 = 72.0
+      expect(state.nextFilterCost, closeTo(72.0, 0.001));
     });
   });
 }

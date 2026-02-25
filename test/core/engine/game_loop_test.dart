@@ -56,8 +56,9 @@ void main() {
 
     final pipelineState = container.read(pipelineProvider);
 
-    // With 1 generator and 1 second elapsed (dt capped or precise), noise should be > 0.
-    expect(pipelineState.noise.currentAmount, greaterThan(0));
+    // With at least 1 generator and 1 filter, and 1 second elapsed, signal should be > 0
+    // because the filter consumes the produced noise immediately.
+    expect(pipelineState.signal.currentAmount, greaterThan(0));
 
     // Stop the loop to avoid dangling tickers
     container.read(gameLoopProvider).stop();

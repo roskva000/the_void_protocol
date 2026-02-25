@@ -63,8 +63,7 @@ class PipelineNotifier extends Notifier<PipelineState> {
   void manualTap() {
     state = state.copyWith(
       noise: state.noise.copyWith(
-        currentAmount:
-            state.noise.currentAmount + state.noise.baseProductionPerSecond,
+        currentAmount: state.noise.currentAmount + 5.0,
       ),
     );
   }
