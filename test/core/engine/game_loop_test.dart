@@ -27,7 +27,7 @@ class TestApp extends ConsumerWidget {
                   filterConsumed: 0,
                   addedSignal: 100.0,
                 );
-            ref.read(upgradesProvider.notifier).buyGenerator(100.0);
+            ref.read(upgradesProvider.notifier).buyGenerator();
           },
           child: const Text('Buy Gen'),
         ),

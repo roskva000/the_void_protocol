@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/usecases/cost_calculator.dart';
+import 'pipeline_provider.dart';
 
 class UpgradesState {
   final int generatorCount;
@@ -61,9 +62,13 @@ class UpgradesNotifier extends Notifier<UpgradesState> {
   }
 
   // Returns true if successful, false if not enough balance.
-  // The UI should NOT check balance. The UI just calls this and reacts to the result.
-  bool buyGenerator(double currentSignal) {
+  // We use `ref.read` to get the current signal and spend it automatically.
+  bool buyGenerator() {
+    final currentSignal = ref.read(pipelineProvider).signal.currentAmount;
     if (currentSignal >= state.nextGeneratorCost) {
+      // Spend the signal
+      ref.read(pipelineProvider.notifier).spendSignal(state.nextGeneratorCost);
+
       int newCount = state.generatorCount + 1;
       state = state.copyWith(
         generatorCount: newCount,
@@ -78,8 +83,12 @@ class UpgradesNotifier extends Notifier<UpgradesState> {
     return false;
   }
 
-  bool buyFilter(double currentSignal) {
+  bool buyFilter() {
+    final currentSignal = ref.read(pipelineProvider).signal.currentAmount;
     if (currentSignal >= state.nextFilterCost) {
+      // Spend the signal
+      ref.read(pipelineProvider.notifier).spendSignal(state.nextFilterCost);
+
       int newCount = state.filterCount + 1;
       state = state.copyWith(
         filterCount: newCount,

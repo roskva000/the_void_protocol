@@ -63,6 +63,13 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen> {
       upgradesProvider.select((s) => s.nextGeneratorCost),
     );
 
+    final filterCount = ref.watch(
+      upgradesProvider.select((s) => s.filterCount),
+    );
+    final nextFiltCost = ref.watch(
+      upgradesProvider.select((s) => s.nextFilterCost),
+    );
+
     final isThrottling = ref.watch(
       metaProvider.select((s) => s.overheat.isThrottling),
     );
@@ -190,7 +197,7 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen> {
                             onPressed: () {
                               bool success = ref
                                   .read(upgradesProvider.notifier)
-                                  .buyGenerator(signalAmount);
+                                  .buyGenerator();
                               if (success) {
                                 Haptics.medium();
                               } else {
@@ -208,6 +215,45 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen> {
                                 ),
                                 Text(
                                   'COST: ${nextGenCost.toStringAsFixed(0)}',
+                                  style: GoogleFonts.spaceMono(
+                                    color: AppColors.rustedBronze,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.glassWhite,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                                horizontal: 24,
+                              ),
+                            ),
+                            onPressed: () {
+                              bool success = ref
+                                  .read(upgradesProvider.notifier)
+                                  .buyFilter();
+                              if (success) {
+                                Haptics.medium();
+                              } else {
+                                Haptics.error();
+                              }
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Filter LVL $filterCount',
+                                  style: GoogleFonts.inter(
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  'COST: ${nextFiltCost.toStringAsFixed(0)}',
                                   style: GoogleFonts.spaceMono(
                                     color: AppColors.rustedBronze,
                                   ),

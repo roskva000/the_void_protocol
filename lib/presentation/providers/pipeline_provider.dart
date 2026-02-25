@@ -67,6 +67,17 @@ class PipelineNotifier extends Notifier<PipelineState> {
       ),
     );
   }
+
+  // Deduct signal when purchasing upgrades
+  void spendSignal(double amount) {
+    if (state.signal.currentAmount >= amount) {
+      state = state.copyWith(
+        signal: state.signal.copyWith(
+          currentAmount: state.signal.currentAmount - amount,
+        ),
+      );
+    }
+  }
 }
 
 final pipelineProvider = NotifierProvider<PipelineNotifier, PipelineState>(() {
