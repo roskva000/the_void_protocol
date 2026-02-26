@@ -30,11 +30,13 @@ class NetworkTab extends ConsumerWidget {
       itemCount: techNodes.length,
       itemBuilder: (context, index) {
         final node = techNodes[index];
-        final canBuy = darkMatter >= node.cost &&
+        final canBuy =
+            darkMatter >= node.cost &&
             node.prerequisites.every((pid) {
-              final pNode = techNodes.firstWhere((n) => n.id == pid,
-                  orElse: () =>
-                      throw Exception("Prerequisite $pid not found"));
+              final pNode = techNodes.firstWhere(
+                (n) => n.id == pid,
+                orElse: () => throw Exception("Prerequisite $pid not found"),
+              );
               return pNode.unlocked;
             });
 
@@ -45,17 +47,19 @@ class NetworkTab extends ConsumerWidget {
             onTap: (canBuy && !node.unlocked)
                 ? () {
                     if (ref.read(metaProvider).remnantData >= node.cost) {
-                      // Deduct cost? We didn't implement cost deduction in Meta yet.
-                      // Let's assume for now.
+                      ref
+                          .read(metaProvider.notifier)
+                          .spendRemnantData(node.cost);
                       ref.read(techTreeProvider.notifier).unlock(node.id);
-                      // TODO: Deduct Dark Matter from Meta
                     }
                   }
                 : null,
             child: Container(
               color: node.unlocked
                   ? Colors.green.withValues(alpha: 0.1)
-                  : (canBuy ? Colors.blue.withValues(alpha: 0.1) : Colors.black54),
+                  : (canBuy
+                        ? Colors.blue.withValues(alpha: 0.1)
+                        : Colors.black54),
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -66,13 +70,9 @@ class NetworkTab extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    // TODO: Localization lookup for dynamic keys
                     node.titleKey,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: Colors.white,
-                    ),
+                    style: GoogleFonts.inter(fontSize: 12, color: Colors.white),
                   ),
                   const SizedBox(height: 4),
                   Text(

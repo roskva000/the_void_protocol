@@ -6,6 +6,7 @@ import '../../providers/upgrades_provider.dart';
 import '../../providers/meta_provider.dart';
 import '../../widgets/visuals/cyber_panel.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../providers/haptic_provider.dart';
 
 class SystemsTab extends ConsumerWidget {
   const SystemsTab({super.key});
@@ -40,10 +41,10 @@ class SystemsTab extends ConsumerWidget {
               onPressed: isCrashed
                   ? null
                   : () {
-                      // ignore: unused_local_variable
-                      final success =
-                          ref.read(upgradesProvider.notifier).buyGenerator();
-                      // TODO: Haptics
+                      final success = ref
+                          .read(upgradesProvider.notifier)
+                          .buyGenerator();
+                      if (success) ref.read(hapticProvider).light();
                     },
               child: Text(l10n.buy),
             ),
@@ -68,10 +69,10 @@ class SystemsTab extends ConsumerWidget {
               onPressed: isCrashed
                   ? null
                   : () {
-                      // ignore: unused_local_variable
-                      final success =
-                          ref.read(upgradesProvider.notifier).buyFilter();
-                      // TODO: Haptics
+                      final success = ref
+                          .read(upgradesProvider.notifier)
+                          .buyFilter();
+                      if (success) ref.read(hapticProvider).light();
                     },
               child: Text(l10n.buy),
             ),

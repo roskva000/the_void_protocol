@@ -14,25 +14,27 @@ class SoundService {
   }
 
   Future<void> _init() async {
-    _pool = Soundpool.fromOptions(options: const SoundpoolOptions(streamType: StreamType.notification));
+    _pool = Soundpool.fromOptions(
+      options: const SoundpoolOptions(streamType: StreamType.notification),
+    );
 
-    // TODO: Load actual assets when available.
+    // TODO(Sound): Load actual assets when available.
     // For now, we just prepare the map.
     // _soundIds['type'] = await _loadSound('assets/sounds/type.wav');
     // _soundIds['error'] = await _loadSound('assets/sounds/error.wav');
     // _soundIds['boot'] = await _loadSound('assets/sounds/boot.wav');
   }
 
-  Future<int> _loadSound(String path) async {
-    if (_pool == null) return -1;
-    try {
-      final asset = await rootBundle.load(path);
-      return await _pool!.load(asset);
-    } catch (e) {
-      // debugPrint('Error loading sound $path: $e');
-      return -1;
-    }
-  }
+  // Future<int> _loadSound(String path) async {
+  //   if (_pool == null) return -1;
+  //   try {
+  //     final asset = await rootBundle.load(path);
+  //     return await _pool!.load(asset);
+  //   } catch (e) {
+  //     // debugPrint('Error loading sound $path: $e');
+  //     return -1;
+  //   }
+  // }
 
   void toggleMute() {
     _muted = !_muted;
@@ -55,8 +57,8 @@ class SoundService {
 
   /// Plays a random typing sound to simulate a mechanical keyboard
   Future<void> playTyping() async {
-     // TODO: Implement random pitch/variation
-     await play('type');
+    // TODO(Sound): Implement random pitch/variation
+    await play('type');
   }
 
   void dispose() {

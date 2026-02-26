@@ -5,6 +5,7 @@ class NarrativeEvent {
   final bool isOneShot;
   final int priority; // Higher means more important
   final Duration delay; // Delay after trigger before showing
+  final bool isGlitched;
 
   const NarrativeEvent({
     required this.id,
@@ -13,6 +14,7 @@ class NarrativeEvent {
     this.isOneShot = true,
     this.priority = 0,
     this.delay = Duration.zero,
+    this.isGlitched = false,
   });
 }
 
@@ -29,9 +31,5 @@ class NarrativeTrigger {
   final String? targetId; // Resource ID or Tech ID
   final double value; // Threshold value
 
-  const NarrativeTrigger({
-    required this.type,
-    this.targetId,
-    this.value = 0.0,
-  });
+  const NarrativeTrigger({required this.type, this.targetId, this.value = 0.0});
 }

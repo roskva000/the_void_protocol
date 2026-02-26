@@ -161,6 +161,12 @@ class MetaNotifier extends Notifier<MetaState> {
     }
   }
 
+  void spendRemnantData(double amount) {
+    if (state.remnantData >= amount) {
+      state = state.copyWith(remnantData: state.remnantData - amount);
+    }
+  }
+
   // Explicit crash trigger for external events
   void triggerCrash({int duration = 10}) {
     state = state.copyWith(
@@ -176,7 +182,7 @@ class MetaNotifier extends Notifier<MetaState> {
     double newNoise = state.noiseReduction;
 
     if (choice == PrestigeChoice.aggressive) newSpeed += 0.1; // +10% Speed
-    if (choice == PrestigeChoice.silent) newNoise += 0.1;     // -10% Noise
+    if (choice == PrestigeChoice.silent) newNoise += 0.1; // -10% Noise
 
     state = state.copyWith(
       remnantData: state.remnantData + reward,

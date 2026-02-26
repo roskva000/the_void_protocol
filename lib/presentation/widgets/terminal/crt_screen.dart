@@ -11,14 +11,11 @@ class CrtScreen extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black,
-        border: Border.all(
-          color: const Color(0xFF111111),
-          width: 8,
-        ),
+        border: Border.all(color: const Color(0xFF111111), width: 8),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00E5FF).withOpacity(0.1),
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -29,15 +26,15 @@ class CrtScreen extends StatelessWidget {
         child: Stack(
           children: [
             // 1. Content
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: child,
-            ),
+            Padding(padding: const EdgeInsets.all(16.0), child: child),
 
             // 2. Scanlines
             const Positioned.fill(
               child: IgnorePointer(
-                child: ScanlineOverlay(opacity: 0.15, duration: Duration(seconds: 4)),
+                child: ScanlineOverlay(
+                  opacity: 0.15,
+                  duration: Duration(seconds: 4),
+                ),
               ),
             ),
 
@@ -72,7 +69,10 @@ class CrtScreen extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.black.withOpacity(0.5), Colors.transparent],
+                    colors: [
+                      Colors.black.withValues(alpha: 0.5),
+                      Colors.transparent,
+                    ],
                   ),
                 ),
               ),

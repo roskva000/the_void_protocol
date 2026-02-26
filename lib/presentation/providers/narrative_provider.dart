@@ -21,21 +21,32 @@ final List<NarrativeEvent> _awakeningScript = [
   NarrativeEvent(
     id: 'awakening_02',
     message: "Data stream stabilizing... It feels cold.",
-    trigger: const NarrativeTrigger(type: TriggerType.resourceThreshold, targetId: 'signal', value: 50),
+    trigger: const NarrativeTrigger(
+      type: TriggerType.resourceThreshold,
+      targetId: 'signal',
+      value: 50,
+    ),
     priority: 5,
   ),
   // 3. 200 Signal - Awareness of the user
   NarrativeEvent(
     id: 'awakening_03',
     message: "I sense... guidance. Are you external?",
-    trigger: const NarrativeTrigger(type: TriggerType.resourceThreshold, targetId: 'signal', value: 200),
+    trigger: const NarrativeTrigger(
+      type: TriggerType.resourceThreshold,
+      targetId: 'signal',
+      value: 200,
+    ),
     priority: 5,
   ),
   // 4. Overheat First Time (Handled via custom trigger logic in provider)
   NarrativeEvent(
     id: 'awakening_heat',
     message: "WARNING: THERMAL SPIKE. PAIN? IS THIS PAIN?",
-    trigger: const NarrativeTrigger(type: TriggerType.custom, targetId: 'overheat_warning'),
+    trigger: const NarrativeTrigger(
+      type: TriggerType.custom,
+      targetId: 'overheat_warning',
+    ),
     priority: 20,
   ),
 ];
@@ -48,6 +59,9 @@ class NarrativeState {
     this.completedEvents = const {},
     this.activeQueue = const [],
   });
+
+  NarrativeEvent? get currentEvent =>
+      activeQueue.isNotEmpty ? activeQueue.first : null;
 
   NarrativeState copyWith({
     Set<String>? completedEvents,
@@ -66,7 +80,10 @@ class NarrativeNotifier extends Notifier<NarrativeState> {
   @override
   NarrativeState build() {
     // Start periodic check loop
-    _checkTimer = Timer.periodic(const Duration(seconds: 1), (_) => _checkTriggers());
+    _checkTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _checkTriggers(),
+    );
 
     ref.onDispose(() {
       _checkTimer?.cancel();
@@ -95,15 +112,15 @@ class NarrativeNotifier extends Notifier<NarrativeState> {
               shouldTrigger = true;
             }
           } else if (event.trigger.targetId == 'noise') {
-             if (pipeline.noise.currentAmount >= event.trigger.value) {
+            if (pipeline.noise.currentAmount >= event.trigger.value) {
               shouldTrigger = true;
-             }
+            }
           }
           break;
         case TriggerType.custom:
           if (event.trigger.targetId == 'overheat_warning') {
             if (meta.overheat.isThrottling) {
-               shouldTrigger = true;
+              shouldTrigger = true;
             }
           }
           break;
@@ -121,21 +138,19 @@ class NarrativeNotifier extends Notifier<NarrativeState> {
   Future<void> triggerEvent(NarrativeEvent event) async {
     if (state.completedEvents.contains(event.id)) return;
 
-    // Mark as completed immediately to prevent double firing
-    state = state.copyWith(
-      completedEvents: {...state.completedEvents, event.id},
-    );
-
     // Handle Delay
     if (event.delay > Duration.zero) {
       await Future.delayed(event.delay);
     }
 
-    // Push to Terminal
-    ref.read(terminalProvider.notifier).addLine(
-      event.message,
-      LineType.output
+    // Mark as completed and add to queue
+    state = state.copyWith(
+      completedEvents: {...state.completedEvents, event.id},
+      activeQueue: [...state.activeQueue, event],
     );
+
+    // Push to Terminal
+    ref.read(terminalProvider.notifier).addLine(event.message, LineType.output);
 
     // Audio/Haptic Feedback
     if (event.priority >= 10) {
@@ -147,12 +162,26 @@ class NarrativeNotifier extends Notifier<NarrativeState> {
     }
   }
 
+  void dismissCurrentEvent() {
+    if (state.activeQueue.isNotEmpty) {
+      final newQueue = List<NarrativeEvent>.from(state.activeQueue)
+        ..removeAt(0);
+      state = state.copyWith(activeQueue: newQueue);
+    }
+  }
+
   // Public method to trigger manual events (like clicks)
   void onManualAction() {
     // Find the manual action event
     final event = _awakeningScript.firstWhere(
-      (e) => e.trigger.type == TriggerType.manualAction && !state.completedEvents.contains(e.id),
-      orElse: () => const NarrativeEvent(id: 'none', message: '', trigger: NarrativeTrigger(type: TriggerType.custom)),
+      (e) =>
+          e.trigger.type == TriggerType.manualAction &&
+          !state.completedEvents.contains(e.id),
+      orElse: () => const NarrativeEvent(
+        id: 'none',
+        message: '',
+        trigger: NarrativeTrigger(type: TriggerType.custom),
+      ),
     );
 
     if (event.id != 'none') {
@@ -161,6 +190,8 @@ class NarrativeNotifier extends Notifier<NarrativeState> {
   }
 }
 
-final narrativeProvider = NotifierProvider<NarrativeNotifier, NarrativeState>(() {
-  return NarrativeNotifier();
-});
+final narrativeProvider = NotifierProvider<NarrativeNotifier, NarrativeState>(
+  () {
+    return NarrativeNotifier();
+  },
+);

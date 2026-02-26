@@ -38,14 +38,14 @@ class _TerminalDisplayState extends ConsumerState<TerminalDisplay> {
   Widget build(BuildContext context) {
     final history = ref.watch(terminalProvider.select((s) => s.history));
 
-    ref.listen<List<TerminalLine>>(
-      terminalProvider.select((s) => s.history),
-      (previous, next) {
-        if (next.length > (previous?.length ?? 0)) {
-          _scrollToBottom();
-        }
+    ref.listen<List<TerminalLine>>(terminalProvider.select((s) => s.history), (
+      previous,
+      next,
+    ) {
+      if (next.length > (previous?.length ?? 0)) {
+        _scrollToBottom();
       }
-    );
+    });
 
     return ListView.builder(
       controller: _scrollController,
@@ -64,18 +64,12 @@ class _TerminalDisplayState extends ConsumerState<TerminalDisplay> {
 
   Widget _buildLine(TerminalLine line) {
     // 1. Determine Style
-    TextStyle style = GoogleFonts.spaceMono(
-      fontSize: 14,
-      height: 1.2,
-    );
+    TextStyle style = GoogleFonts.spaceMono(fontSize: 14, height: 1.2);
 
     if (line.type == LineType.input) {
       return Text(
         line.text,
-        style: style.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.bold
-        ),
+        style: style.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
       );
     }
 
@@ -96,10 +90,7 @@ class _TerminalDisplayState extends ConsumerState<TerminalDisplay> {
         break;
     }
 
-    final textWidget = Text(
-      line.text,
-      style: style.copyWith(color: color),
-    );
+    final textWidget = Text(line.text, style: style.copyWith(color: color));
 
     // 2. Determine Animation
     // Only animate if the line is "fresh" (e.g., created in the last 2 seconds)
@@ -111,13 +102,11 @@ class _TerminalDisplayState extends ConsumerState<TerminalDisplay> {
 
     Duration speed;
     if (line.type == LineType.system) {
-       speed = const Duration(milliseconds: 10);
+      speed = const Duration(milliseconds: 10);
     } else {
-       speed = const Duration(milliseconds: 30);
+      speed = const Duration(milliseconds: 30);
     }
 
-    return textWidget
-        .animate()
-        .typewriter(speed: speed, curve: Curves.linear);
+    return textWidget.animate().fadeIn(duration: speed, curve: Curves.linear);
   }
 }
