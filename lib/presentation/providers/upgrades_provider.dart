@@ -102,6 +102,10 @@ class UpgradesNotifier extends Notifier<UpgradesState> {
     }
     return false;
   }
+
+  void reset() {
+    state = const UpgradesState();
+  }
 }
 
 final upgradesProvider = NotifierProvider<UpgradesNotifier, UpgradesState>(() {

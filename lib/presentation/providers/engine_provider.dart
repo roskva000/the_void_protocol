@@ -5,6 +5,7 @@ import '../../domain/usecases/pipeline_calculator.dart';
 import 'meta_provider.dart';
 import 'pipeline_provider.dart';
 import 'upgrades_provider.dart';
+import 'skill_provider.dart';
 
 class EngineNotifier extends Notifier<double> {
   double _debugLogTimer = 0.0;
@@ -56,17 +57,11 @@ class EngineNotifier extends Notifier<double> {
           addedSignal: tickResult.signalProduced,
         );
 
-    if (tickResult.overheatGenerated > 0) {
-      ref
-          .read(metaProvider.notifier)
-          .updateOverheat(tickResult.overheatGenerated, dt);
-    } else {
-      // Natural cooling
-      ref.read(metaProvider.notifier).updateOverheat(0.0, dt);
-    }
+    // Process Meta Systems (Heat, Stability, Momentum)
+    ref.read(metaProvider.notifier).tick(dt, addedHeat: tickResult.overheatGenerated);
 
-    // Momentum decay (if applicable)
-    ref.read(metaProvider.notifier).decayMomentum(dt);
+    // Process Skills Cooldowns
+    ref.read(skillProvider.notifier).tick(dt);
 
     // 4. Debug Logic (Temporary for Phase 4 Verification)
     if (kDebugMode) {

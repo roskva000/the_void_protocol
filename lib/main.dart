@@ -17,6 +17,9 @@ import 'presentation/providers/pipeline_provider.dart';
 import 'presentation/providers/upgrades_provider.dart';
 import 'presentation/providers/locale_provider.dart';
 import 'presentation/screens/boot_screen.dart';
+import 'presentation/theme/void_theme.dart';
+import 'presentation/widgets/visuals/scanline_overlay.dart';
+import 'presentation/widgets/narrative/narrative_overlay.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -144,7 +147,7 @@ class _MainAppState extends ConsumerState<MainApp> {
         if (result.overheatGenerated > 0) {
           ref
               .read(metaProvider.notifier)
-              .updateOverheat(result.overheatGenerated, 0.0);
+              .tick(0.0, addedHeat: result.overheatGenerated);
         }
       }
     }
@@ -215,7 +218,7 @@ class _MainAppState extends ConsumerState<MainApp> {
         if (result.overheatGenerated > 0) {
           ref
               .read(metaProvider.notifier)
-              .updateOverheat(result.overheatGenerated, 0.0);
+              .tick(0.0, addedHeat: result.overheatGenerated);
         }
       }
     }
@@ -227,11 +230,24 @@ class _MainAppState extends ConsumerState<MainApp> {
 
     return MaterialApp(
       title: 'The Void Protocol',
-      theme: ThemeData.dark(),
+      theme: VoidTheme.darkTheme,
       debugShowCheckedModeBanner: false,
       locale: currentLocale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            child ?? const SizedBox.shrink(),
+            const NarrativeOverlay(),
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: ScanlineOverlay(opacity: 0.1),
+              ),
+            ),
+          ],
+        );
+      },
       home: const BootScreen(),
     );
   }
