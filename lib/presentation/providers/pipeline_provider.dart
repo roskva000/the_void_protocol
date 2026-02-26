@@ -79,7 +79,7 @@ class PipelineNotifier extends Notifier<PipelineState> {
     );
 
     // Manual tap adds heat
-    ref.read(metaProvider.notifier).updateOverheat(2.0, 0.0);
+    ref.read(metaProvider.notifier).tick(0.0, addedHeat: 2.0);
   }
 
   // Deduct signal when purchasing upgrades
@@ -91,6 +91,10 @@ class PipelineNotifier extends Notifier<PipelineState> {
         ),
       );
     }
+  }
+
+  void reset() {
+    state = const PipelineState();
   }
 }
 

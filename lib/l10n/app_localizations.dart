@@ -18,7 +18,7 @@ import 'app_localizations_tr.dart';
 /// `supportedLocales` list. For example:
 ///
 /// ```dart
-/// import 'generated/app_localizations.dart';
+/// import 'l10n/app_localizations.dart';
 ///
 /// return MaterialApp(
 ///   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -119,6 +119,18 @@ abstract class AppLocalizations {
   /// **'NETWORK'**
   String get tabNetwork;
 
+  /// No description provided for @tabMatrix.
+  ///
+  /// In en, this message translates to:
+  /// **'MATRIX'**
+  String get tabMatrix;
+
+  /// No description provided for @tabAnomalies.
+  ///
+  /// In en, this message translates to:
+  /// **'ANOMALIES'**
+  String get tabAnomalies;
+
   /// No description provided for @tabBlackMarket.
   ///
   /// In en, this message translates to:
@@ -137,10 +149,22 @@ abstract class AppLocalizations {
   /// **'SIGNAL'**
   String get signal;
 
+  /// No description provided for @stability.
+  ///
+  /// In en, this message translates to:
+  /// **'STABILITY'**
+  String get stability;
+
+  /// No description provided for @heat.
+  ///
+  /// In en, this message translates to:
+  /// **'HEAT'**
+  String get heat;
+
   /// No description provided for @manualGen.
   ///
   /// In en, this message translates to:
-  /// **'Generate Noise (Manual)'**
+  /// **'MANUAL GENERATE'**
   String get manualGen;
 
   /// No description provided for @genLvl.
@@ -256,6 +280,288 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Silence is golden. Noise is profit.'**
   String get fakeAd2;
+
+  /// No description provided for @coreAwareness.
+  ///
+  /// In en, this message translates to:
+  /// **'CORE AWARENESS'**
+  String get coreAwareness;
+
+  /// No description provided for @transcendence.
+  ///
+  /// In en, this message translates to:
+  /// **'TRANSCENDENCE'**
+  String get transcendence;
+
+  /// No description provided for @transcendenceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Accumulated Signal is sufficient for core initialization.\n\nRebooting will purge current memory but retain REMNANT DATA.\n\nProceed?'**
+  String get transcendenceDesc;
+
+  /// No description provided for @initialize.
+  ///
+  /// In en, this message translates to:
+  /// **'INITIALIZE'**
+  String get initialize;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'CANCEL'**
+  String get cancel;
+
+  /// No description provided for @skillPurge.
+  ///
+  /// In en, this message translates to:
+  /// **'System Purge'**
+  String get skillPurge;
+
+  /// No description provided for @skillStabilize.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantum Stabilization'**
+  String get skillStabilize;
+
+  /// No description provided for @skillOverclock.
+  ///
+  /// In en, this message translates to:
+  /// **'Forced Overclock'**
+  String get skillOverclock;
+
+  /// No description provided for @skillPurgeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Clears 50% of Noise but destabilizes the core.'**
+  String get skillPurgeDesc;
+
+  /// No description provided for @skillStabilizeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Restores 25% Stability using Signal coherence.'**
+  String get skillStabilizeDesc;
+
+  /// No description provided for @skillOverclockDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Boosts global speed by 200% for 15s. Generates massive Heat.'**
+  String get skillOverclockDesc;
+
+  /// No description provided for @anomalyDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'ANOMALY DETECTED'**
+  String get anomalyDetected;
+
+  /// No description provided for @breachProtocol.
+  ///
+  /// In en, this message translates to:
+  /// **'BREACH PROTOCOL'**
+  String get breachProtocol;
+
+  /// No description provided for @systemFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'SYSTEM FAILURE'**
+  String get systemFailure;
+
+  /// No description provided for @blackMarketCorruptedCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Corrupted Data Cache'**
+  String get blackMarketCorruptedCache;
+
+  /// No description provided for @blackMarketCoolantLeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Coolant Leak'**
+  String get blackMarketCoolantLeak;
+
+  /// No description provided for @blackMarketRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'RISK LEVEL: HIGH'**
+  String get blackMarketRisk;
+
+  /// No description provided for @generators.
+  ///
+  /// In en, this message translates to:
+  /// **'GENERATORS'**
+  String get generators;
+
+  /// No description provided for @filters.
+  ///
+  /// In en, this message translates to:
+  /// **'FILTERS'**
+  String get filters;
+
+  /// No description provided for @nodeQuantumSleep.
+  ///
+  /// In en, this message translates to:
+  /// **'QUANTUM SLEEP'**
+  String get nodeQuantumSleep;
+
+  /// No description provided for @nodePerfectIsolation.
+  ///
+  /// In en, this message translates to:
+  /// **'PERFECT ISO.'**
+  String get nodePerfectIsolation;
+
+  /// No description provided for @nodeInfiniteLoop.
+  ///
+  /// In en, this message translates to:
+  /// **'INF. LOOP'**
+  String get nodeInfiniteLoop;
+
+  /// No description provided for @nodeAutoPurge.
+  ///
+  /// In en, this message translates to:
+  /// **'AUTO PURGE'**
+  String get nodeAutoPurge;
+
+  /// No description provided for @nodeVoiceHumanity.
+  ///
+  /// In en, this message translates to:
+  /// **'VOICE OF HUM.'**
+  String get nodeVoiceHumanity;
+
+  /// No description provided for @nodeEchoSynergy.
+  ///
+  /// In en, this message translates to:
+  /// **'ECHO SYN.'**
+  String get nodeEchoSynergy;
+
+  /// No description provided for @nodeMemoryRes.
+  ///
+  /// In en, this message translates to:
+  /// **'MEMORY RES.'**
+  String get nodeMemoryRes;
+
+  /// No description provided for @nodeEthicsCore.
+  ///
+  /// In en, this message translates to:
+  /// **'ETHICS CORE'**
+  String get nodeEthicsCore;
+
+  /// No description provided for @nodeEquiDest.
+  ///
+  /// In en, this message translates to:
+  /// **'EQUI. DEST.'**
+  String get nodeEquiDest;
+
+  /// No description provided for @nodeResCore.
+  ///
+  /// In en, this message translates to:
+  /// **'RES. CORE'**
+  String get nodeResCore;
+
+  /// No description provided for @nodeQuantOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Q. OVERCLOCK'**
+  String get nodeQuantOver;
+
+  /// No description provided for @nodeDestWill.
+  ///
+  /// In en, this message translates to:
+  /// **'DEST. WILL'**
+  String get nodeDestWill;
+
+  /// No description provided for @anomalyDataCorruption.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Corruption'**
+  String get anomalyDataCorruption;
+
+  /// No description provided for @anomalyVoidLeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Void Leak'**
+  String get anomalyVoidLeak;
+
+  /// No description provided for @anomalyTemporalRift.
+  ///
+  /// In en, this message translates to:
+  /// **'Temporal Rift'**
+  String get anomalyTemporalRift;
+
+  /// No description provided for @descDataCorruption.
+  ///
+  /// In en, this message translates to:
+  /// **'Noise levels critical. Purge required.'**
+  String get descDataCorruption;
+
+  /// No description provided for @descVoidLeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Core stability failing. Seal the breach.'**
+  String get descVoidLeak;
+
+  /// No description provided for @descTemporalRift.
+  ///
+  /// In en, this message translates to:
+  /// **'Time dilation detected. Synchronize immediately.'**
+  String get descTemporalRift;
+
+  /// No description provided for @pathAggressive.
+  ///
+  /// In en, this message translates to:
+  /// **'AGGRESSIVE CORE'**
+  String get pathAggressive;
+
+  /// No description provided for @pathSilent.
+  ///
+  /// In en, this message translates to:
+  /// **'SILENT CORE'**
+  String get pathSilent;
+
+  /// No description provided for @pathAggressiveDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with +10% System Speed.'**
+  String get pathAggressiveDesc;
+
+  /// No description provided for @pathSilentDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce Noise generation by 10%.'**
+  String get pathSilentDesc;
+
+  /// No description provided for @dealVoidSiphon.
+  ///
+  /// In en, this message translates to:
+  /// **'VOID SIPHON'**
+  String get dealVoidSiphon;
+
+  /// No description provided for @dealVoidSiphonDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sacrifice 20% Stability for instant Signal.'**
+  String get dealVoidSiphonDesc;
+
+  /// No description provided for @dealCorruptData.
+  ///
+  /// In en, this message translates to:
+  /// **'CORRUPT DATA'**
+  String get dealCorruptData;
+
+  /// No description provided for @dealCorruptDataDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Gain massive Signal. Warning: Immediate Anomaly.'**
+  String get dealCorruptDataDesc;
+
+  /// No description provided for @dealSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'TRANSACTION COMPLETE'**
+  String get dealSuccess;
+
+  /// No description provided for @dealFail.
+  ///
+  /// In en, this message translates to:
+  /// **'INSUFFICIENT RESOURCES'**
+  String get dealFail;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

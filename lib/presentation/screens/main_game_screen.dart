@@ -9,10 +9,14 @@ import '../widgets/visuals/particle_background.dart';
 import '../widgets/visuals/cyber_panel.dart';
 import '../widgets/visuals/glitch_text.dart';
 import 'tabs/terminal_tab.dart';
-import 'tabs/systems_tab.dart';
-import 'tabs/network_tab.dart';
 import 'tabs/black_market_tab.dart';
+import 'tech_tree_screen.dart';
 import '../../l10n/app_localizations.dart';
+import '../widgets/skills/skill_bar.dart';
+import '../widgets/anomalies/anomaly_alert.dart';
+import '../widgets/visuals/shake_widget.dart';
+import '../providers/shake_provider.dart';
+import '../widgets/visuals/particle_overlay.dart';
 
 class MainGameScreen extends ConsumerStatefulWidget {
   const MainGameScreen({super.key});
@@ -28,7 +32,7 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(gameLoopProvider).start();
     });
@@ -51,11 +55,19 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
     final meta = ref.watch(metaProvider);
     final l10n = AppLocalizations.of(context)!;
 
+    // Listen for Crash to trigger Shake
+    ref.listen<bool>(metaProvider.select((s) => s.isCrashed), (previous, next) {
+      if (next == true && previous != true) {
+        ref.read(shakeProvider.notifier).trigger(intensity: 30.0, duration: const Duration(milliseconds: 1000));
+      }
+    });
+
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          // 1. Background Layer
+      body: ShakeWidget(
+        child: Stack(
+          children: [
+            // 1. Background Layer
           const Positioned.fill(
             child: ParticleBackground(
               color: Color(0xFF00E5FF),
@@ -108,7 +120,13 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
                           color: const Color(0xFF00E5FF),
                         ),
                         _ResourceItem(
-                          label: "HEAT",
+                          label: l10n.stability,
+                          value: meta.stability * 100,
+                          color: meta.stability > 0.5 ? Colors.green : Colors.red,
+                          suffix: "%",
+                        ),
+                        _ResourceItem(
+                          label: l10n.heat,
                           value: meta.overheat.currentPool,
                           color: meta.overheat.isThrottling
                               ? Colors.red
@@ -142,9 +160,8 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
                     ),
                     tabs: [
                       Tab(text: l10n.tabTerminal),
-                      Tab(text: l10n.tabSystems),
-                      Tab(text: l10n.tabNetwork),
-                      Tab(text: l10n.tabBlackMarket),
+                      Tab(text: l10n.tabMatrix),
+                      Tab(text: l10n.tabAnomalies),
                     ],
                   ),
                 ),
@@ -152,26 +169,29 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
                 // -- Tab View Content --
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(0.0), // Remove padding for Matrix to fill screen
                     child: TabBarView(
                       controller: _tabController,
+                      physics: const NeverScrollableScrollPhysics(), // Disable swipe to avoid conflict with Graph pan
                       children: const [
                         TerminalTab(),
-                        SystemsTab(),
-                        NetworkTab(),
+                        TechTreeScreen(),
                         BlackMarketTab(),
                       ],
                     ),
                   ),
                 ),
 
+                // -- Skills Bar --
+                if (!meta.isCrashed) const SkillBar(),
+
                 // -- Global Actions (e.g. Manual Click) --
                 if (!meta.isCrashed)
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: SizedBox(
                       width: double.infinity,
-                      height: 60,
+                      height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
@@ -191,7 +211,7 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
                           l10n.manualGen.toUpperCase(),
                           style: GoogleFonts.spaceMono(
                             color: const Color(0xFF00E5FF),
-                            fontSize: 16,
+                            fontSize: 14,
                             letterSpacing: 2,
                           ),
                         ),
@@ -201,7 +221,14 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
               ],
             ),
           ),
-        ],
+
+            // 4. Particle Effects Layer
+            const Positioned.fill(child: ParticleOverlay()),
+
+            // 5. Anomaly Alert Layer (Top)
+            const AnomalyAlert(),
+          ],
+        ),
       ),
     );
   }
