@@ -105,7 +105,7 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
                     vertical: 8.0,
                   ),
                   child: CyberPanel(
-                    height: 80,
+                    height: 100,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -161,7 +161,7 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
                     tabs: [
                       Tab(text: l10n.tabTerminal),
                       Tab(text: l10n.tabMatrix),
-                      Tab(text: l10n.tabAnomalies),
+                      Tab(text: l10n.tabBlackMarket),
                     ],
                   ),
                 ),
@@ -223,7 +223,11 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
           ),
 
             // 4. Particle Effects Layer
-            const Positioned.fill(child: ParticleOverlay()),
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: ParticleOverlay(),
+              ),
+            ),
 
             // 5. Anomaly Alert Layer (Top)
             const AnomalyAlert(),

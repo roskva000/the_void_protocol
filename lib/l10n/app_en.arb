@@ -105,5 +105,11 @@
   "dealCorruptData": "CORRUPT DATA",
   "dealCorruptDataDesc": "Gain massive Signal. Warning: Immediate Anomaly.",
   "dealSuccess": "TRANSACTION COMPLETE",
-  "dealFail": "INSUFFICIENT RESOURCES"
+  "dealFail": "INSUFFICIENT RESOURCES",
+  "active": "ACTIVE",
+  "locked": "LOCKED",
+  "costSig": "{cost} SIG",
+  "costStability": "{amount}% STABILITY",
+  "rewardSignal": "{amount} SIGNAL",
+  "unknown": "UNKNOWN"
 }

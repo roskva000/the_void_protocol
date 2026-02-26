@@ -247,4 +247,28 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get dealFail => 'YETERSİZ KAYNAK';
+
+  @override
+  String get active => 'AKTİF';
+
+  @override
+  String get locked => 'KİLİTLİ';
+
+  @override
+  String costSig(Object cost) {
+    return '$cost SİNYAL';
+  }
+
+  @override
+  String costStability(Object amount) {
+    return '%$amount KARARLILIK';
+  }
+
+  @override
+  String rewardSignal(Object amount) {
+    return '$amount SİNYAL';
+  }
+
+  @override
+  String get unknown => 'BİLİNMİYOR';
 }
