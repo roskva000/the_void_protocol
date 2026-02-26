@@ -17,6 +17,9 @@ import '../widgets/anomalies/anomaly_alert.dart';
 import '../widgets/visuals/shake_widget.dart';
 import '../providers/shake_provider.dart';
 import '../widgets/visuals/particle_overlay.dart';
+import '../providers/sound_provider.dart';
+import '../providers/haptic_provider.dart';
+import '../providers/narrative_provider.dart';
 
 class MainGameScreen extends ConsumerStatefulWidget {
   const MainGameScreen({super.key});
@@ -158,6 +161,10 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
+                    onTap: (index) {
+                      ref.read(soundProvider).play('click');
+                      ref.read(hapticProvider).selection();
+                    },
                     tabs: [
                       Tab(text: l10n.tabTerminal),
                       Tab(text: l10n.tabMatrix),
@@ -206,6 +213,9 @@ class _MainGameScreenState extends ConsumerState<MainGameScreen>
                         ),
                         onPressed: () {
                           ref.read(pipelineProvider.notifier).manualTap();
+                          ref.read(soundProvider).play('click');
+                          ref.read(hapticProvider).light();
+                          ref.read(narrativeProvider.notifier).onManualAction();
                         },
                         child: Text(
                           l10n.manualGen.toUpperCase(),

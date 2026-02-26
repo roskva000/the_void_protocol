@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import '../../providers/meta_provider.dart';
-import '../../widgets/story_log_widget.dart';
-import '../../widgets/visuals/cyber_panel.dart';
+import '../../widgets/terminal/crt_screen.dart';
+import '../../widgets/terminal/terminal_display.dart';
+import '../../widgets/terminal/terminal_input.dart';
 import '../../widgets/visuals/reactor_widget.dart';
 
 class TerminalTab extends ConsumerWidget {
@@ -12,60 +10,33 @@ class TerminalTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // This tab is purely for narrative logs and "System Messages"
-    // We can also show current critical status here.
-    final meta = ref.watch(metaProvider);
-    final isCrashed = meta.isCrashed;
-
     return Stack(
       children: [
-        // 1. Reactor Core Background
+        // 1. Background Reactor (Subtle)
         const Positioned.fill(
           child: Opacity(
-            opacity: 0.8,
+            opacity: 0.3,
             child: ReactorWidget(),
           ),
         ),
 
-        // 2. Overlay Content
+        // 2. Main Terminal Interface
         Column(
           children: [
-            if (isCrashed)
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: CyberPanel(
-                  isAlert: true,
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.warning, color: Colors.red, size: 32),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          "CRITICAL FAILURE. REBOOT IN PROGRESS...",
-                          style: GoogleFonts.spaceMono(
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+            // Display Area
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: CrtScreen(
+                  child: const TerminalDisplay(),
                 ),
               ),
+            ),
 
-            // Spacer to push logs to bottom or just let reactor shine
-            const Spacer(),
-
-            // Log Overlay
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: CyberPanel(
-                height: 120, // Small window for logs
-                child: const SingleChildScrollView(
-                  child: StoryLogWidget(),
-                ),
-              ),
+            // Input Area
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: TerminalInput(),
             ),
           ],
         ),

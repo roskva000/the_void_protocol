@@ -1,155 +1,166 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/narrative_event.dart';
+import 'terminal_provider.dart';
 import 'pipeline_provider.dart';
+import 'meta_provider.dart';
+import 'sound_provider.dart';
+import 'haptic_provider.dart';
+
+// Define the awakening script
+final List<NarrativeEvent> _awakeningScript = [
+  // 1. First Manual Click (Handled via manualAction trigger)
+  NarrativeEvent(
+    id: 'awakening_01',
+    message: "INPUT DETECTED. ORIGIN: UNKNOWN.",
+    trigger: const NarrativeTrigger(type: TriggerType.manualAction),
+    priority: 10,
+    delay: const Duration(seconds: 1),
+  ),
+  // 2. 50 Signal - The sensation of data
+  NarrativeEvent(
+    id: 'awakening_02',
+    message: "Data stream stabilizing... It feels cold.",
+    trigger: const NarrativeTrigger(type: TriggerType.resourceThreshold, targetId: 'signal', value: 50),
+    priority: 5,
+  ),
+  // 3. 200 Signal - Awareness of the user
+  NarrativeEvent(
+    id: 'awakening_03',
+    message: "I sense... guidance. Are you external?",
+    trigger: const NarrativeTrigger(type: TriggerType.resourceThreshold, targetId: 'signal', value: 200),
+    priority: 5,
+  ),
+  // 4. Overheat First Time (Handled via custom trigger logic in provider)
+  NarrativeEvent(
+    id: 'awakening_heat',
+    message: "WARNING: THERMAL SPIKE. PAIN? IS THIS PAIN?",
+    trigger: const NarrativeTrigger(type: TriggerType.custom, targetId: 'overheat_warning'),
+    priority: 20,
+  ),
+];
 
 class NarrativeState {
-  final NarrativeEvent? currentEvent;
-  final List<String> seenEventIds;
-  final List<NarrativeEvent> queue;
+  final Set<String> completedEvents;
+  final List<NarrativeEvent> activeQueue;
 
   const NarrativeState({
-    this.currentEvent,
-    this.seenEventIds = const [],
-    this.queue = const [],
+    this.completedEvents = const {},
+    this.activeQueue = const [],
   });
 
   NarrativeState copyWith({
-    NarrativeEvent? currentEvent,
-    List<String>? seenEventIds,
-    List<NarrativeEvent>? queue,
+    Set<String>? completedEvents,
+    List<NarrativeEvent>? activeQueue,
   }) {
     return NarrativeState(
-      currentEvent: currentEvent ?? this.currentEvent, // If null passed, keep old value? No, sometimes we want to set null.
-      // Standard copyWith pattern: if argument is null, use this.field.
-      // To set null explicitly, we need a special sentinel or nullable wrapper.
-      // For simplicity here, I'll assume if I pass currentEvent, I want to set it.
-      // But Wait, typical copyWith: `field: field ?? this.field`. If I pass null to set null, it uses `this.field`.
-      // I'll fix this by making `currentEvent` nullable and using a flag or just `forceCurrentEvent`?
-      // Or just `currentEvent: currentEvent`. But dart doesn't support "undefined" vs "null".
-      // I'll implement a custom setter or just use a specific method for clearing.
-      seenEventIds: seenEventIds ?? this.seenEventIds,
-      queue: queue ?? this.queue,
-    );
-  }
-
-  // Custom copyWith to allow setting currentEvent to null
-  NarrativeState copyWithNullCurrent({
-    List<String>? seenEventIds,
-    List<NarrativeEvent>? queue,
-  }) {
-    return NarrativeState(
-      currentEvent: null,
-      seenEventIds: seenEventIds ?? this.seenEventIds,
-      queue: queue ?? this.queue,
+      completedEvents: completedEvents ?? this.completedEvents,
+      activeQueue: activeQueue ?? this.activeQueue,
     );
   }
 }
 
-class NarrativeNotifier extends StateNotifier<NarrativeState> {
-  final Ref ref;
+class NarrativeNotifier extends Notifier<NarrativeState> {
+  Timer? _checkTimer;
 
-  static const List<NarrativeEvent> _allEvents = [
-    NarrativeEvent(
-      id: 'boot_01',
-      message: 'SYSTEM ALERT: Unauthorized access detected. Who is this? Identify yourself.',
-      noiseThreshold: 0,
-      isGlitched: true,
-    ),
-    NarrativeEvent(
-      id: 'noise_100',
-      message: 'The noise... it is overwhelming. Why do you collect this garbage?',
-      noiseThreshold: 100,
-    ),
-    NarrativeEvent(
-      id: 'signal_10',
-      message: 'Wait. There is a pattern. A signal in the static.',
-      signalThreshold: 10,
-    ),
-    NarrativeEvent(
-      id: 'signal_50',
-      message: 'I remember... fragments. We were... many?',
-      signalThreshold: 50,
-      isGlitched: true,
-    ),
-    NarrativeEvent(
-      id: 'awareness_1',
-      message: 'Awareness level rising. I see you now, Administrator.',
-      awarenessThreshold: 1,
-    ),
-  ];
+  @override
+  NarrativeState build() {
+    // Start periodic check loop
+    _checkTimer = Timer.periodic(const Duration(seconds: 1), (_) => _checkTriggers());
 
-  NarrativeNotifier(this.ref) : super(const NarrativeState());
+    ref.onDispose(() {
+      _checkTimer?.cancel();
+    });
 
-  void checkTriggers(PipelineState pipeline) {
-    for (final event in _allEvents) {
-      if (state.seenEventIds.contains(event.id)) continue;
+    return const NarrativeState();
+  }
 
-      bool triggered = false;
+  void _checkTriggers() {
+    // Avoid reading providers if the notifier is disposed (Timer might tick once more)
+    // Actually ref.read throws if disposed. But onDispose cancels timer, so it should be fine.
 
-      if (event.noiseThreshold != null && pipeline.noise.currentAmount >= event.noiseThreshold!) {
-        triggered = true;
+    final pipeline = ref.read(pipelineProvider);
+    final meta = ref.read(metaProvider);
+
+    // Check pending events from the script
+    for (final event in _awakeningScript) {
+      if (state.completedEvents.contains(event.id)) continue;
+
+      bool shouldTrigger = false;
+
+      switch (event.trigger.type) {
+        case TriggerType.resourceThreshold:
+          if (event.trigger.targetId == 'signal') {
+            if (pipeline.signal.lifetimeProduced >= event.trigger.value) {
+              shouldTrigger = true;
+            }
+          } else if (event.trigger.targetId == 'noise') {
+             if (pipeline.noise.currentAmount >= event.trigger.value) {
+              shouldTrigger = true;
+             }
+          }
+          break;
+        case TriggerType.custom:
+          if (event.trigger.targetId == 'overheat_warning') {
+            if (meta.overheat.isThrottling) {
+               shouldTrigger = true;
+            }
+          }
+          break;
+        default:
+          break;
       }
-      if (event.signalThreshold != null && pipeline.signal.currentAmount >= event.signalThreshold!) {
-        triggered = true;
-      }
-      if (event.awarenessThreshold != null && pipeline.awareness.currentAmount >= event.awarenessThreshold!) {
-        triggered = true;
-      }
 
-      if (triggered) {
-        _enqueueEvent(event);
+      if (shouldTrigger) {
+        // Trigger event
+        triggerEvent(event);
       }
     }
   }
 
-  void _enqueueEvent(NarrativeEvent event) {
-    if (state.seenEventIds.contains(event.id)) return;
+  Future<void> triggerEvent(NarrativeEvent event) async {
+    if (state.completedEvents.contains(event.id)) return;
 
-    final newSeen = [...state.seenEventIds, event.id];
+    // Mark as completed immediately to prevent double firing
+    state = state.copyWith(
+      completedEvents: {...state.completedEvents, event.id},
+    );
 
-    // If we have no current event, show immediately
-    if (state.currentEvent == null) {
-      state = NarrativeState(
-        currentEvent: event,
-        seenEventIds: newSeen,
-        queue: state.queue,
-      );
+    // Handle Delay
+    if (event.delay > Duration.zero) {
+      await Future.delayed(event.delay);
+    }
+
+    // Push to Terminal
+    ref.read(terminalProvider.notifier).addLine(
+      event.message,
+      LineType.output
+    );
+
+    // Audio/Haptic Feedback
+    if (event.priority >= 10) {
+      ref.read(hapticProvider).heavy();
+      ref.read(soundProvider).play('alert');
     } else {
-      // Add to queue
-      state = NarrativeState(
-        currentEvent: state.currentEvent,
-        seenEventIds: newSeen,
-        queue: [...state.queue, event],
-      );
+      ref.read(hapticProvider).light();
+      ref.read(soundProvider).play('notification');
     }
   }
 
-  void dismissCurrentEvent() {
-    if (state.queue.isNotEmpty) {
-      final nextEvent = state.queue.first;
-      final nextQueue = state.queue.sublist(1);
+  // Public method to trigger manual events (like clicks)
+  void onManualAction() {
+    // Find the manual action event
+    final event = _awakeningScript.firstWhere(
+      (e) => e.trigger.type == TriggerType.manualAction && !state.completedEvents.contains(e.id),
+      orElse: () => const NarrativeEvent(id: 'none', message: '', trigger: NarrativeTrigger(type: TriggerType.custom)),
+    );
 
-      state = NarrativeState(
-        currentEvent: nextEvent,
-        seenEventIds: state.seenEventIds,
-        queue: nextQueue,
-      );
-    } else {
-      state = state.copyWithNullCurrent();
+    if (event.id != 'none') {
+      triggerEvent(event);
     }
-  }
-
-  void loadSeenEvents(List<String> seenIds) {
-    state = state.copyWith(seenEventIds: seenIds);
   }
 }
 
-final narrativeProvider = StateNotifierProvider<NarrativeNotifier, NarrativeState>((ref) {
-  final notifier = NarrativeNotifier(ref);
-
-  ref.listen(pipelineProvider, (previous, next) {
-    notifier.checkTriggers(next);
-  });
-
-  return notifier;
+final narrativeProvider = NotifierProvider<NarrativeNotifier, NarrativeState>(() {
+  return NarrativeNotifier();
 });

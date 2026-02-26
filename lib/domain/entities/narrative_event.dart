@@ -1,19 +1,37 @@
 class NarrativeEvent {
   final String id;
   final String message;
-  final bool isUnique;
-  final double? noiseThreshold; // Trigger when noise exceeds this
-  final double? signalThreshold; // Trigger when signal exceeds this
-  final double? awarenessThreshold; // Trigger when awareness exceeds this
-  final bool isGlitched; // Should the text be visually corrupted?
+  final NarrativeTrigger trigger;
+  final bool isOneShot;
+  final int priority; // Higher means more important
+  final Duration delay; // Delay after trigger before showing
 
   const NarrativeEvent({
     required this.id,
     required this.message,
-    this.isUnique = true,
-    this.noiseThreshold,
-    this.signalThreshold,
-    this.awarenessThreshold,
-    this.isGlitched = false,
+    required this.trigger,
+    this.isOneShot = true,
+    this.priority = 0,
+    this.delay = Duration.zero,
+  });
+}
+
+enum TriggerType {
+  resourceThreshold,
+  timeElapsed,
+  manualAction,
+  techUnlocked,
+  custom,
+}
+
+class NarrativeTrigger {
+  final TriggerType type;
+  final String? targetId; // Resource ID or Tech ID
+  final double value; // Threshold value
+
+  const NarrativeTrigger({
+    required this.type,
+    this.targetId,
+    this.value = 0.0,
   });
 }
