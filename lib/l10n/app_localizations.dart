@@ -562,6 +562,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'INSUFFICIENT RESOURCES'**
   String get dealFail;
+
+  /// No description provided for @active.
+  ///
+  /// In en, this message translates to:
+  /// **'ACTIVE'**
+  String get active;
+
+  /// No description provided for @locked.
+  ///
+  /// In en, this message translates to:
+  /// **'LOCKED'**
+  String get locked;
+
+  /// No description provided for @costSig.
+  ///
+  /// In en, this message translates to:
+  /// **'{cost} SIG'**
+  String costSig(Object cost);
+
+  /// No description provided for @costStability.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount}% STABILITY'**
+  String costStability(Object amount);
+
+  /// No description provided for @rewardSignal.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} SIGNAL'**
+  String rewardSignal(Object amount);
+
+  /// No description provided for @unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'UNKNOWN'**
+  String get unknown;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

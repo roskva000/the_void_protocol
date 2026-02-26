@@ -247,4 +247,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dealFail => 'INSUFFICIENT RESOURCES';
+
+  @override
+  String get active => 'ACTIVE';
+
+  @override
+  String get locked => 'LOCKED';
+
+  @override
+  String costSig(Object cost) {
+    return '$cost SIG';
+  }
+
+  @override
+  String costStability(Object amount) {
+    return '$amount% STABILITY';
+  }
+
+  @override
+  String rewardSignal(Object amount) {
+    return '$amount SIGNAL';
+  }
+
+  @override
+  String get unknown => 'UNKNOWN';
 }

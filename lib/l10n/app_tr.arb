@@ -81,5 +81,11 @@
   "dealCorruptData": "BOZUK VERİ",
   "dealCorruptDataDesc": "Devasa Sinyal kazan. Uyarı: Anında Anomali.",
   "dealSuccess": "İŞLEM TAMAMLANDI",
-  "dealFail": "YETERSİZ KAYNAK"
+  "dealFail": "YETERSİZ KAYNAK",
+  "active": "AKTİF",
+  "locked": "KİLİTLİ",
+  "costSig": "{cost} SİNYAL",
+  "costStability": "%{amount} KARARLILIK",
+  "rewardSignal": "{amount} SİNYAL",
+  "unknown": "BİLİNMİYOR"
 }

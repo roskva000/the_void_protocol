@@ -40,8 +40,8 @@ class BlackMarketTab extends ConsumerWidget {
           ref,
           title: l10n.dealVoidSiphon,
           description: l10n.dealVoidSiphonDesc,
-          cost: "20% STABILITY",
-          reward: "500 SIGNAL",
+          cost: l10n.costStability(20),
+          reward: l10n.rewardSignal(500),
           isRisky: false,
           onTap: () {
              final meta = ref.read(metaProvider);
@@ -69,8 +69,8 @@ class BlackMarketTab extends ConsumerWidget {
           ref,
           title: l10n.dealCorruptData,
           description: l10n.dealCorruptDataDesc,
-          cost: "UNKNOWN",
-          reward: "5000 SIGNAL",
+          cost: l10n.unknown,
+          reward: l10n.rewardSignal(5000),
           isRisky: true,
           onTap: () {
              final activeAnomaly = ref.read(anomalyProvider).activeAnomaly;

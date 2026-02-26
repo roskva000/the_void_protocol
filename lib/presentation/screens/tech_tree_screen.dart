@@ -96,22 +96,22 @@ class TechTreeScreen extends ConsumerWidget {
     _addTechNode(ref, nodes, 'quantum_sleep', l10n.nodeQuantumSleep,
         genPos + const Offset(-150, 0), ['perfect_isolation'],
         techTree.quantumSleepUnlocked, true,
-        (t) => t.copyWith(quantumSleepUnlocked: true), 100);
+        (t) => t.copyWith(quantumSleepUnlocked: true), 100, l10n);
 
     _addTechNode(ref, nodes, 'perfect_isolation', l10n.nodePerfectIsolation,
         genPos + const Offset(-300, 0), ['infinite_loop'],
         techTree.perfectIsolationUnlocked, techTree.quantumSleepUnlocked,
-        (t) => t.copyWith(perfectIsolationUnlocked: true), 500);
+        (t) => t.copyWith(perfectIsolationUnlocked: true), 500, l10n);
 
     _addTechNode(ref, nodes, 'infinite_loop', l10n.nodeInfiniteLoop,
         genPos + const Offset(-450, 0), ['auto_purge'],
         techTree.infiniteLoopUnlocked, techTree.perfectIsolationUnlocked,
-        (t) => t.copyWith(infiniteLoopUnlocked: true), 2000);
+        (t) => t.copyWith(infiniteLoopUnlocked: true), 2000, l10n);
 
     _addTechNode(ref, nodes, 'auto_purge', l10n.nodeAutoPurge,
         genPos + const Offset(-600, 0), [],
         techTree.autoPurgeUnlocked, techTree.infiniteLoopUnlocked,
-        (t) => t.copyWith(autoPurgeUnlocked: true), 5000);
+        (t) => t.copyWith(autoPurgeUnlocked: true), 5000, l10n);
 
 
     // --- NETWORK WING (Right) ---
@@ -134,22 +134,22 @@ class TechTreeScreen extends ConsumerWidget {
     _addTechNode(ref, nodes, 'voice_humanity', l10n.nodeVoiceHumanity,
         filterPos + const Offset(150, 0), ['echo_synergy'],
         techTree.voiceOfHumanityUnlocked, true,
-        (t) => t.copyWith(voiceOfHumanityUnlocked: true), 150);
+        (t) => t.copyWith(voiceOfHumanityUnlocked: true), 150, l10n);
 
     _addTechNode(ref, nodes, 'echo_synergy', l10n.nodeEchoSynergy,
         filterPos + const Offset(300, 0), ['memory_res'],
         techTree.echoSynergyUnlocked, techTree.voiceOfHumanityUnlocked,
-        (t) => t.copyWith(echoSynergyUnlocked: true), 600);
+        (t) => t.copyWith(echoSynergyUnlocked: true), 600, l10n);
 
     _addTechNode(ref, nodes, 'memory_res', l10n.nodeMemoryRes,
         filterPos + const Offset(450, 0), ['ethics_core'],
         techTree.memoryRestorationUnlocked, techTree.echoSynergyUnlocked,
-        (t) => t.copyWith(memoryRestorationUnlocked: true), 2500);
+        (t) => t.copyWith(memoryRestorationUnlocked: true), 2500, l10n);
 
     _addTechNode(ref, nodes, 'ethics_core', l10n.nodeEthicsCore,
         filterPos + const Offset(600, 0), [],
         techTree.ethicsCoreUnlocked, techTree.memoryRestorationUnlocked,
-        (t) => t.copyWith(ethicsCoreUnlocked: true), 10000);
+        (t) => t.copyWith(ethicsCoreUnlocked: true), 10000, l10n);
 
 
     // --- RISK WING (Bottom) ---
@@ -157,29 +157,29 @@ class TechTreeScreen extends ConsumerWidget {
     _addTechNode(ref, nodes, 'risk_root', l10n.tabAnomalies,
         riskPos, ['equi_dest'],
         true, true, // Always unlocked root for branch
-        (t) => t, 0, size: 50);
+        (t) => t, 0, l10n, size: 50);
 
     // Risk Branch (Extending Down)
     // equilibriumDestruction -> resonanceCore -> quantumOverclock -> destructiveWill
     _addTechNode(ref, nodes, 'equi_dest', l10n.nodeEquiDest,
         riskPos + const Offset(0, 150), ['res_core'],
         techTree.equilibriumDestructionUnlocked, true,
-        (t) => t.copyWith(equilibriumDestructionUnlocked: true), 1000);
+        (t) => t.copyWith(equilibriumDestructionUnlocked: true), 1000, l10n);
 
     _addTechNode(ref, nodes, 'res_core', l10n.nodeResCore,
         riskPos + const Offset(0, 300), ['quant_over'],
         techTree.resonanceCoreUnlocked, techTree.equilibriumDestructionUnlocked,
-        (t) => t.copyWith(resonanceCoreUnlocked: true), 5000);
+        (t) => t.copyWith(resonanceCoreUnlocked: true), 5000, l10n);
 
     _addTechNode(ref, nodes, 'quant_over', l10n.nodeQuantOver,
         riskPos + const Offset(0, 450), ['dest_will'],
         techTree.quantumOverclockUnlocked, techTree.resonanceCoreUnlocked,
-        (t) => t.copyWith(quantumOverclockUnlocked: true), 20000);
+        (t) => t.copyWith(quantumOverclockUnlocked: true), 20000, l10n);
 
     _addTechNode(ref, nodes, 'dest_will', l10n.nodeDestWill,
         riskPos + const Offset(0, 600), [],
         techTree.destructiveWillUnlocked, techTree.quantumOverclockUnlocked,
-        (t) => t.copyWith(destructiveWillUnlocked: true), 50000);
+        (t) => t.copyWith(destructiveWillUnlocked: true), 50000, l10n);
 
 
     return Scaffold(
@@ -203,6 +203,7 @@ class TechTreeScreen extends ConsumerWidget {
     bool isParentUnlocked,
     TechTree Function(TechTree) update,
     double cost,
+    AppLocalizations l10n,
     {double size = 60}
   ) {
     NodeStatus status;
@@ -217,7 +218,7 @@ class TechTreeScreen extends ConsumerWidget {
     nodes.add(NeuralNodeData(
       id: id,
       label: label,
-      subLabel: isUnlocked ? 'ACTIVE' : (status == NodeStatus.available ? '$cost SIG' : 'LOCKED'),
+      subLabel: isUnlocked ? l10n.active : (status == NodeStatus.available ? l10n.costSig(cost.toInt()) : l10n.locked),
       position: pos,
       children: children,
       status: status,
