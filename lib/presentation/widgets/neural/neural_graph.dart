@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/void_theme.dart';
-import 'neural_node_widget.dart';
+
+enum NodeStatus { locked, available, purchased }
 
 class NeuralNodeData {
   final String id;
@@ -24,7 +25,7 @@ class NeuralNodeData {
   });
 }
 
-class NeuralGraph extends StatelessWidget {
+class NeuralGraph extends StatefulWidget {
   final List<NeuralNodeData> nodes;
   final double width; // Canvas width
   final double height; // Canvas height
@@ -32,70 +33,163 @@ class NeuralGraph extends StatelessWidget {
   const NeuralGraph({
     super.key,
     required this.nodes,
-    this.width = 2000,
-    this.height = 2000,
+    this.width = 4000,
+    this.height = 4000,
   });
 
   @override
+  State<NeuralGraph> createState() => _NeuralGraphState();
+}
+
+class _NeuralGraphState extends State<NeuralGraph> {
+  final TransformationController _transformationController = TransformationController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Center at (2000, 2000) roughly
+    // We want the view to start showing the center nodes.
+    // Viewport size is unknown here but let's assume standard phone ~400x800
+    // Matrix: Scale(0.5) Translate(-2000 + screenW/2, -2000 + screenH/2)
+    // Actually, matrix order: Translate THEN Scale. No, Matrix is pre-multiply.
+    // It's usually cleaner to set identity then manipulate.
+    // For now, let's start at identity but translated to center-ish.
+    // 2000, 2000 is center. We want top-left of viewport to be around 1800, 1600 maybe.
+
+    // Create initial transform
+    final matrix = Matrix4.identity()
+      ..translate(-1800.0, -1600.0);
+
+    _transformationController.value = matrix;
+  }
+
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return InteractiveViewer(
-      boundaryMargin: const EdgeInsets.all(500), // Allow panning way out
-      minScale: 0.1,
-      maxScale: 2.0,
-      constrained: false, // Infinite canvas
-      child: SizedBox(
-        width: width,
-        height: height,
-        child: Stack(
-          children: [
-            // Layer 1: Connections
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _ConnectionPainter(nodes: nodes),
-              ),
-            ),
-            // Layer 2: Nodes
-            ...nodes.map((node) {
-              return Positioned(
-                left: node.position.dx - (node.size / 2),
-                top: node.position.dy - (node.size / 2),
-                child: Column(
-                  children: [
-                    NeuralNodeWidget(
-                      id: node.id,
-                      label: node.label,
-                      subLabel: node.subLabel,
-                      status: node.status,
-                      onTap: node.onTap ?? () {},
-                      size: node.size,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      node.label,
-                      style: TextStyle(
-                        color: node.status == NodeStatus.locked
-                            ? Colors.grey.withValues(alpha: 0.5)
-                            : VoidTheme.neonCyan,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    if (node.subLabel != null)
-                      Text(
-                        node.subLabel!,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 10,
-                        ),
-                      ),
-                  ],
+    return Container(
+      color: Colors.black, // Deep space background
+      child: InteractiveViewer(
+        transformationController: _transformationController,
+        boundaryMargin: const EdgeInsets.all(2000), // Huge margin to fly around
+        minScale: 0.1,
+        maxScale: 3.0,
+        constrained: false, // Infinite canvas
+        child: SizedBox(
+          width: widget.width,
+          height: widget.height,
+          child: Stack(
+            children: [
+              // 0. Star Field (Static background on canvas)
+              Positioned.fill(
+                child: CustomPaint(
+                   painter: _StarFieldPainter(),
                 ),
-              );
-            }),
-          ],
+              ),
+
+              // 1. Connections Layer
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _ConnectionPainter(nodes: widget.nodes),
+                ),
+              ),
+
+              // 2. Nodes Layer
+              ...widget.nodes.map((node) {
+                // Manually position based on data
+                return Positioned(
+                  left: node.position.dx - (node.size / 2),
+                  top: node.position.dy - (node.size / 2),
+                  child: GestureDetector(
+                    onTap: node.onTap,
+                    child: _buildNodeContent(node),
+                  ),
+                );
+              }),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildNodeContent(NeuralNodeData node) {
+    Color color;
+    Color glowColor;
+
+    switch (node.status) {
+      case NodeStatus.purchased:
+        color = const Color(0xFF00E5FF); // Neon Cyan
+        glowColor = const Color(0xFF00E5FF).withOpacity(0.6);
+        break;
+      case NodeStatus.available:
+        color = Colors.white;
+        glowColor = Colors.white.withOpacity(0.4);
+        break;
+      case NodeStatus.locked:
+      default:
+        color = Colors.grey.shade800;
+        glowColor = Colors.transparent;
+        break;
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // The Circle Node
+        Container(
+          width: node.size,
+          height: node.size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.black, // Center black to cover lines
+            border: Border.all(color: color, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: glowColor,
+                blurRadius: node.status == NodeStatus.purchased ? 15 : 5,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Center(
+            child: node.status == NodeStatus.locked
+                ? Icon(Icons.lock, size: node.size * 0.4, color: Colors.grey)
+                : null,
+          ),
+        ),
+
+        // Label
+        const SizedBox(height: 4),
+        Text(
+          node.label,
+          style: TextStyle(
+            color: node.status == NodeStatus.locked
+                ? Colors.grey.withOpacity(0.5)
+                : const Color(0xFF00E5FF),
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            shadows: [
+              Shadow(color: Colors.black, blurRadius: 2),
+            ],
+          ),
+          textAlign: TextAlign.center,
+        ),
+         if (node.subLabel != null)
+            Text(
+              node.subLabel!,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 10,
+                shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+              ),
+              textAlign: TextAlign.center,
+            ),
+      ],
     );
   }
 }
@@ -107,43 +201,68 @@ class _ConnectionPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = VoidTheme.neonCyan.withValues(alpha: 0.3)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-
-    final activePaint = Paint()
-      ..color = VoidTheme.signalGreen.withValues(alpha: 0.6)
-      ..strokeWidth = 3.0
-      ..style = PaintingStyle.stroke;
-
-    // Create a map for fast lookup
-    final nodeMap = {for (var node in nodes) node.id: node};
+    // Map for lookup
+    final nodeMap = {for (var n in nodes) n.id: n};
 
     for (final node in nodes) {
       for (final childId in node.children) {
-        final childNode = nodeMap[childId];
-        if (childNode != null) {
-          // Determine line color:
-          // If both nodes are unlocked/purchased/available, line is lit?
-          // Usually, if parent is purchased, line to child is potentially active.
-          final bool isActive = node.status == NodeStatus.purchased &&
-                                (childNode.status == NodeStatus.available || childNode.status == NodeStatus.purchased);
+        final child = nodeMap[childId];
+        if (child != null) {
+          final paint = Paint()
+            ..strokeWidth = 2.0
+            ..style = PaintingStyle.stroke;
 
-          canvas.drawLine(
-            node.position,
-            childNode.position,
-            isActive ? activePaint : paint,
+          // Simple color logic for lines
+          Color startColor = Colors.grey.shade800;
+          Color endColor = Colors.grey.shade800;
+
+          if (node.status == NodeStatus.purchased) {
+            startColor = const Color(0xFF00E5FF);
+            if (child.status == NodeStatus.purchased) {
+              endColor = const Color(0xFF00E5FF);
+            } else if (child.status == NodeStatus.available) {
+              endColor = Colors.white;
+            }
+          }
+
+          // Draw gradient line
+          // The gradient shader needs a rect spanning the line
+          final rect = Rect.fromPoints(node.position, child.position);
+          final gradient = LinearGradient(
+            colors: [startColor, endColor],
           );
+
+          paint.shader = gradient.createShader(rect);
+
+          canvas.drawLine(node.position, child.position, paint);
         }
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant _ConnectionPainter oldDelegate) {
-    // If node positions or status change, repaint
-    // For simplicity, just return true or check length/status
-    return true;
+  bool shouldRepaint(covariant _ConnectionPainter oldDelegate) => true; // Always repaint on state change
+}
+
+class _StarFieldPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white.withOpacity(0.3);
+
+    // Draw deterministic stars based on coordinates
+    // Using a prime number step to scatter them
+    for (double x = 0; x < size.width; x += 113) {
+      for (double y = 0; y < size.height; y += 97) {
+        // Pseudo-random offset using modulo
+        final offsetX = (x * y) % 50;
+        final offsetY = (x + y) % 40;
+
+        // Draw small dot
+        canvas.drawCircle(Offset(x + offsetX, y + offsetY), 1.0, paint);
+      }
+    }
   }
+
+  @override
+  bool shouldRepaint(covariant _StarFieldPainter oldDelegate) => false;
 }

@@ -9,6 +9,7 @@ abstract class Overheat with _$Overheat {
     @Default(0.0) double currentPool,
     @Default(50.0)
     double maxTolerance, // O_max, 5% of memory capacity typically
+    @Default(100.0) double maxPool, // Hard crash limit
     @Default(false) bool isThrottling,
   }) = _Overheat;
 

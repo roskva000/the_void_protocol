@@ -43,7 +43,7 @@ class TerminalState {
 class TerminalNotifier extends Notifier<TerminalState> {
   @override
   TerminalState build() {
-    return const TerminalState(history: [
+    return TerminalState(history: [
       // Initial boot sequence log
       TerminalLine(text: "SYSTEM BOOT SEQUENCE INITIATED...", type: LineType.system),
       TerminalLine(text: "CHECKING MEMORY INTEGRITY... OK", type: LineType.system),

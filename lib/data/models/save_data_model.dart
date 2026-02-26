@@ -1,31 +1,66 @@
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive/hive.dart';
 
-class SaveDataModel {
+part 'save_data_model.g.dart';
+
+@HiveType(typeId: 0)
+class SaveDataModel extends HiveObject {
+  @HiveField(0)
   final double noiseAmount;
+
+  @HiveField(1)
   final double signalAmount;
+
+  @HiveField(2)
   final double awarenessAmount;
+
+  @HiveField(3)
   final double overheatPool;
+
+  @HiveField(4)
   final int generatorCount;
+
+  @HiveField(5)
   final int filterCount;
+
+  @HiveField(6)
   final DateTime? lastExitTime;
 
   // Tech Tree Unlocks
+  @HiveField(7)
   final bool quantumSleepUnlocked;
+  @HiveField(8)
   final bool perfectIsolationUnlocked;
+  @HiveField(9)
   final bool infiniteLoopUnlocked;
+  @HiveField(10)
   final bool autoPurgeUnlocked;
 
+  @HiveField(11)
   final bool voiceOfHumanityUnlocked;
+  @HiveField(12)
   final bool echoSynergyUnlocked;
+  @HiveField(13)
   final bool memoryRestorationUnlocked;
+  @HiveField(14)
   final bool ethicsCoreUnlocked;
 
+  @HiveField(15)
   final bool equilibriumDestructionUnlocked;
+  @HiveField(16)
   final bool resonanceCoreUnlocked;
+  @HiveField(17)
   final bool quantumOverclockUnlocked;
+  @HiveField(18)
   final bool destructiveWillUnlocked;
 
-  const SaveDataModel({
+  // New Advanced Resources
+  @HiveField(19)
+  final double processedSignalAmount;
+
+  @HiveField(20)
+  final int encryptionKeyCount;
+
+  SaveDataModel({
     required this.noiseAmount,
     required this.signalAmount,
     required this.awarenessAmount,
@@ -33,70 +68,19 @@ class SaveDataModel {
     required this.generatorCount,
     required this.filterCount,
     this.lastExitTime,
-    required this.quantumSleepUnlocked,
-    required this.perfectIsolationUnlocked,
-    required this.infiniteLoopUnlocked,
-    required this.autoPurgeUnlocked,
-    required this.voiceOfHumanityUnlocked,
-    required this.echoSynergyUnlocked,
-    required this.memoryRestorationUnlocked,
-    required this.ethicsCoreUnlocked,
-    required this.equilibriumDestructionUnlocked,
-    required this.resonanceCoreUnlocked,
-    required this.quantumOverclockUnlocked,
-    required this.destructiveWillUnlocked,
+    this.quantumSleepUnlocked = false,
+    this.perfectIsolationUnlocked = false,
+    this.infiniteLoopUnlocked = false,
+    this.autoPurgeUnlocked = false,
+    this.voiceOfHumanityUnlocked = false,
+    this.echoSynergyUnlocked = false,
+    this.memoryRestorationUnlocked = false,
+    this.ethicsCoreUnlocked = false,
+    this.equilibriumDestructionUnlocked = false,
+    this.resonanceCoreUnlocked = false,
+    this.quantumOverclockUnlocked = false,
+    this.destructiveWillUnlocked = false,
+    this.processedSignalAmount = 0.0,
+    this.encryptionKeyCount = 0,
   });
-}
-
-class SaveDataModelAdapter extends TypeAdapter<SaveDataModel> {
-  @override
-  final int typeId = 0;
-
-  @override
-  SaveDataModel read(BinaryReader reader) {
-    return SaveDataModel(
-      noiseAmount: reader.readDouble(),
-      signalAmount: reader.readDouble(),
-      awarenessAmount: reader.readDouble(),
-      overheatPool: reader.readDouble(),
-      generatorCount: reader.readInt(),
-      filterCount: reader.readInt(),
-      lastExitTime: reader.read() as DateTime?,
-      quantumSleepUnlocked: reader.readBool(),
-      perfectIsolationUnlocked: reader.readBool(),
-      infiniteLoopUnlocked: reader.readBool(),
-      autoPurgeUnlocked: reader.readBool(),
-      voiceOfHumanityUnlocked: reader.readBool(),
-      echoSynergyUnlocked: reader.readBool(),
-      memoryRestorationUnlocked: reader.readBool(),
-      ethicsCoreUnlocked: reader.readBool(),
-      equilibriumDestructionUnlocked: reader.readBool(),
-      resonanceCoreUnlocked: reader.readBool(),
-      quantumOverclockUnlocked: reader.readBool(),
-      destructiveWillUnlocked: reader.readBool(),
-    );
-  }
-
-  @override
-  void write(BinaryWriter writer, SaveDataModel obj) {
-    writer.writeDouble(obj.noiseAmount);
-    writer.writeDouble(obj.signalAmount);
-    writer.writeDouble(obj.awarenessAmount);
-    writer.writeDouble(obj.overheatPool);
-    writer.writeInt(obj.generatorCount);
-    writer.writeInt(obj.filterCount);
-    writer.write(obj.lastExitTime);
-    writer.writeBool(obj.quantumSleepUnlocked);
-    writer.writeBool(obj.perfectIsolationUnlocked);
-    writer.writeBool(obj.infiniteLoopUnlocked);
-    writer.writeBool(obj.autoPurgeUnlocked);
-    writer.writeBool(obj.voiceOfHumanityUnlocked);
-    writer.writeBool(obj.echoSynergyUnlocked);
-    writer.writeBool(obj.memoryRestorationUnlocked);
-    writer.writeBool(obj.ethicsCoreUnlocked);
-    writer.writeBool(obj.equilibriumDestructionUnlocked);
-    writer.writeBool(obj.resonanceCoreUnlocked);
-    writer.writeBool(obj.quantumOverclockUnlocked);
-    writer.writeBool(obj.destructiveWillUnlocked);
-  }
 }

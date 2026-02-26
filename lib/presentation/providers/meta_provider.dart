@@ -1,17 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/overheat.dart';
 import '../../domain/entities/tech_tree.dart';
+import '../../domain/entities/overheat.dart';
+import 'terminal_provider.dart';
+
+enum PrestigeChoice {
+  none,
+  aggressive, // More remnant data, higher heat risk
+  silent,     // Less remnant data, better efficiency
+}
 
 class MetaState {
   final Overheat overheat;
   final TechTree techTree;
-  final double remnantData; // Prestige currency
-  final double momentum; // Global speed multiplier
-  final bool isCrashed; // If true, production is halted
-  final DateTime? crashEndTime;
-  final double stability; // 0.0 to 1.0 (1.0 is stable)
-  final double speedBonus; // Permanent multiplier from Prestige
-  final double noiseReduction; // Permanent reduction from Prestige
+  final double remnantData; // Prestige Currency (Void Shards)
+  final double momentum;    // Production Multiplier
+  final bool isCrashed;
+  final double stability;   // 0.0 to 1.0
 
   const MetaState({
     this.overheat = const Overheat(),
@@ -19,10 +23,7 @@ class MetaState {
     this.remnantData = 0.0,
     this.momentum = 1.0,
     this.isCrashed = false,
-    this.crashEndTime,
     this.stability = 1.0,
-    this.speedBonus = 0.0,
-    this.noiseReduction = 0.0,
   });
 
   MetaState copyWith({
@@ -31,10 +32,7 @@ class MetaState {
     double? remnantData,
     double? momentum,
     bool? isCrashed,
-    DateTime? crashEndTime,
     double? stability,
-    double? speedBonus,
-    double? noiseReduction,
   }) {
     return MetaState(
       overheat: overheat ?? this.overheat,
@@ -42,15 +40,10 @@ class MetaState {
       remnantData: remnantData ?? this.remnantData,
       momentum: momentum ?? this.momentum,
       isCrashed: isCrashed ?? this.isCrashed,
-      crashEndTime: crashEndTime ?? this.crashEndTime,
       stability: stability ?? this.stability,
-      speedBonus: speedBonus ?? this.speedBonus,
-      noiseReduction: noiseReduction ?? this.noiseReduction,
     );
   }
 }
-
-enum PrestigeChoice { aggressive, silent }
 
 class MetaNotifier extends Notifier<MetaState> {
   @override
@@ -62,138 +55,122 @@ class MetaNotifier extends Notifier<MetaState> {
     state = loadedState;
   }
 
-  // Main tick function for Meta Systems (Heat, Stability, Momentum)
-  void tick(double dt, {double addedHeat = 0.0}) {
-    if (state.isCrashed) {
-      if (state.crashEndTime != null &&
-          DateTime.now().isAfter(state.crashEndTime!)) {
-        // Reboot system
-        state = state.copyWith(
-          isCrashed: false,
-          overheat: state.overheat.copyWith(currentPool: 0),
-          crashEndTime: null,
-          stability: 0.5, // Reboot at 50% stability
-          momentum: 1.0,
-        );
-      }
-      return;
-    }
+  void updateTechTree(TechTree Function(TechTree) update) {
+    state = state.copyWith(techTree: update(state.techTree));
+  }
 
-    // --- Heat Logic ---
-    double newHeat = state.overheat.currentPool + addedHeat;
-    // Natural cooling if low heat input (simplified logic for game feel)
-    if (addedHeat <= 0.5) {
-      newHeat -= 5.0 * dt; // Cooling rate
-    }
+  void tick(double dt, {double addedHeat = 0.0}) {
+    // 1. Calculate Heat Change
+    // Base cooling - Is it affected by tech?
+    double cooling = 1.0 * dt;
+
+    // Tech modifiers
+    if (state.techTree.autoPurgeUnlocked) cooling *= 1.5;
+    if (state.techTree.quantumOverclockUnlocked) addedHeat *= 1.2; // Risky tech
+
+    double newHeat = state.overheat.currentPool + addedHeat - cooling;
+
+    // Clamp
     if (newHeat < 0) newHeat = 0;
 
-    // --- Stability Logic ---
-    double currentStability = state.stability;
+    // Check Thresholds
+    bool isThrottling = false;
+    if (newHeat > state.overheat.maxPool * 0.8) {
+      isThrottling = true;
+    }
 
-    // High heat damages stability
-    if (newHeat > 80.0) {
-      currentStability -= (0.05 * dt); // 5% per second at high heat
-    } else if (newHeat > 50.0) {
-      currentStability -= (0.01 * dt); // 1% per second at medium heat
+    // Check Crash
+    bool crashed = state.isCrashed;
+    double newStability = state.stability;
+
+    if (newHeat >= state.overheat.maxPool) {
+      // System Crash!
+      newHeat = state.overheat.maxPool;
+      if (!crashed) {
+        crashed = true;
+        newStability = 0.0;
+        ref.read(terminalProvider.notifier).addLine("CRITICAL ERROR: SYSTEM MELTDOWN.", LineType.error);
+      }
     } else {
-      // Passive regeneration if cool
-      currentStability += (0.02 * dt);
+      // Recovery
+      if (crashed && newHeat < state.overheat.maxPool * 0.5) {
+        crashed = false;
+        ref.read(terminalProvider.notifier).addLine("SYSTEM REBOOT SUCCESSFUL.", LineType.success);
+      }
+
+      // Stability logic
+      if (isThrottling) {
+        newStability -= 0.05 * dt;
+      } else {
+        newStability += 0.05 * dt;
+      }
+      if (newStability < 0) newStability = 0;
+      if (newStability > 1) newStability = 1;
     }
 
-    // Clamp stability
-    if (currentStability > 1.0) currentStability = 1.0;
-
-    // Check for Crash conditions
-    bool crashTriggered = false;
-    int crashDuration = 10;
-
-    if (newHeat >= 100.0) {
-      crashTriggered = true;
-      crashDuration = 15; // Heat crash
-      newHeat = 100.0;
-    } else if (currentStability <= 0.0) {
-      crashTriggered = true;
-      crashDuration = 20; // Stability failure (worse)
-      currentStability = 0.0;
-    }
-
-    if (crashTriggered) {
-      state = state.copyWith(
-        isCrashed: true,
-        crashEndTime: DateTime.now().add(Duration(seconds: crashDuration)),
-        overheat: state.overheat.copyWith(currentPool: newHeat),
-        stability: currentStability,
-        momentum: 0.0, // Complete halt
-      );
-      return;
-    }
-
-    // --- Momentum Logic ---
+    // Handle Momentum Decay if boosted (simple logic for now)
     double newMomentum = state.momentum;
-    double baseMomentum = 1.0 + state.speedBonus;
-    if (state.momentum > baseMomentum) {
-      newMomentum -= (0.05 * dt); // 5% decay per second
-      if (newMomentum < baseMomentum) newMomentum = baseMomentum;
+    if (newMomentum > 1.0) {
+      // Decay back to 1.0 slowly
+      newMomentum -= 0.1 * dt;
+      if (newMomentum < 1.0) newMomentum = 1.0;
     }
 
-    // Apply updates
     state = state.copyWith(
       overheat: state.overheat.copyWith(
         currentPool: newHeat,
-        isThrottling: newHeat > 80.0,
+        isThrottling: isThrottling,
       ),
-      stability: currentStability,
+      isCrashed: crashed,
+      stability: newStability,
       momentum: newMomentum,
     );
   }
 
-  void addMomentum(double amount) {
-    if (!state.isCrashed) {
-      state = state.copyWith(momentum: state.momentum + amount);
-    }
-  }
-
   void restoreStability(double amount) {
-    if (!state.isCrashed) {
-      double newStability = state.stability + amount;
-      if (newStability > 1.0) newStability = 1.0;
-      state = state.copyWith(stability: newStability);
+    double newStability = state.stability + amount;
+    if (newStability < 0) newStability = 0;
+    if (newStability > 1) newStability = 1;
+    state = state.copyWith(stability: newStability);
+  }
+
+  void addMomentum(double amount) {
+    state = state.copyWith(momentum: state.momentum + amount);
+  }
+
+  // PRESTIGE LOGIC
+  void triggerPrestige(double earnedRemnants, PrestigeChoice choice) {
+    // Calculate new multiplier based on choice
+    double newMomentum = 1.0; // Base momentum resets usually, but prestige adds PERMANENT bonuses separately.
+    // However, the previous logic added to current momentum. Let's stick to standard idle logic:
+    // Prestige Currency (Remnant Data) gives a passive bonus.
+    // Momentum is a temporary multiplier.
+
+    // For now, let's say Remnant Data IS the multiplier source.
+    // But to respect the code structure, we just reset state.
+
+    double preservedMomentum = 1.0;
+    if (choice == PrestigeChoice.aggressive) {
+       preservedMomentum = 1.5;
+    } else if (choice == PrestigeChoice.silent) {
+       preservedMomentum = 1.2;
     }
-  }
 
-  // Explicit crash trigger for external events
-  void triggerCrash({int duration = 10}) {
-    state = state.copyWith(
-      isCrashed: true,
-      crashEndTime: DateTime.now().add(Duration(seconds: duration)),
-      momentum: 0.0,
-    );
-  }
-
-  // Ulu Cokus triggered resetting state and rewarding Remnant Data
-  void triggerPrestige(double reward, PrestigeChoice choice) {
-    double newSpeed = state.speedBonus;
-    double newNoise = state.noiseReduction;
-
-    if (choice == PrestigeChoice.aggressive) newSpeed += 0.1; // +10% Speed
-    if (choice == PrestigeChoice.silent) newNoise += 0.1;     // -10% Noise
-
-    state = state.copyWith(
-      remnantData: state.remnantData + reward,
-      overheat: const Overheat(),
-      momentum: 1.0 + newSpeed, // Start with bonus
+    final newState = MetaState(
+      overheat: const Overheat(), // Reset heat
+      techTree: const TechTree(), // Reset tree
+      remnantData: state.remnantData + earnedRemnants,
+      momentum: preservedMomentum,
       isCrashed: false,
-      crashEndTime: null,
       stability: 1.0,
-      techTree: const TechTree(),
-      speedBonus: newSpeed,
-      noiseReduction: newNoise,
     );
-  }
 
-  // Helper to update tech tree
-  void updateTechTree(TechTree Function(TechTree) update) {
-    state = state.copyWith(techTree: update(state.techTree));
+    state = newState;
+
+    ref.read(terminalProvider.notifier).addLine(
+      "SYSTEM REBUILT. VOID INTEGRATION COMPLETE. REMNANT DATA: ${(state.remnantData).toInt()}",
+      LineType.system
+    );
   }
 }
 

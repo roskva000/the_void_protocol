@@ -3,6 +3,7 @@ import '../../domain/entities/awareness.dart';
 import '../../domain/entities/noise.dart';
 import '../../domain/entities/filter.dart';
 import '../../domain/entities/signal.dart';
+import '../../domain/entities/advanced_resources.dart';
 import 'meta_provider.dart';
 
 class PipelineState {
@@ -11,11 +12,17 @@ class PipelineState {
   final Signal signal;
   final Awareness awareness;
 
+  // New Phase 2 Resources
+  final ProcessedSignal processedSignal;
+  final EncryptionKey encryptionKey;
+
   const PipelineState({
     this.noise = const Noise(),
     this.filter = const Filter(),
     this.signal = const Signal(),
     this.awareness = const Awareness(),
+    this.processedSignal = const ProcessedSignal(),
+    this.encryptionKey = const EncryptionKey(),
   });
 
   PipelineState copyWith({
@@ -23,12 +30,16 @@ class PipelineState {
     Filter? filter,
     Signal? signal,
     Awareness? awareness,
+    ProcessedSignal? processedSignal,
+    EncryptionKey? encryptionKey,
   }) {
     return PipelineState(
       noise: noise ?? this.noise,
       filter: filter ?? this.filter,
       signal: signal ?? this.signal,
       awareness: awareness ?? this.awareness,
+      processedSignal: processedSignal ?? this.processedSignal,
+      encryptionKey: encryptionKey ?? this.encryptionKey,
     );
   }
 }
@@ -56,6 +67,11 @@ class PipelineNotifier extends Notifier<PipelineState> {
       return;
     }
 
+    // Process Advanced Resources if unlocked
+    // For now, let's say 10% of raw Signal can be processed into ProcessedSignal if user has tech
+    // This logic belongs in a Calculator usecase ideally, but for MVP here is fine.
+
+    // Calculate final state
     state = state.copyWith(
       noise: state.noise.copyWith(
         currentAmount: state.noise.currentAmount + addedNoise - filterConsumed,

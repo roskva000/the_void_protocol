@@ -16,6 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$Overheat {
 
  double get currentPool; double get maxTolerance;// O_max, 5% of memory capacity typically
+ double get maxPool;// Hard crash limit
  bool get isThrottling;
 /// Create a copy of Overheat
 /// with the given fields replaced by the non-null parameter values.
@@ -29,16 +30,16 @@ $OverheatCopyWith<Overheat> get copyWith => _$OverheatCopyWithImpl<Overheat>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Overheat&&(identical(other.currentPool, currentPool) || other.currentPool == currentPool)&&(identical(other.maxTolerance, maxTolerance) || other.maxTolerance == maxTolerance)&&(identical(other.isThrottling, isThrottling) || other.isThrottling == isThrottling));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Overheat&&(identical(other.currentPool, currentPool) || other.currentPool == currentPool)&&(identical(other.maxTolerance, maxTolerance) || other.maxTolerance == maxTolerance)&&(identical(other.maxPool, maxPool) || other.maxPool == maxPool)&&(identical(other.isThrottling, isThrottling) || other.isThrottling == isThrottling));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,currentPool,maxTolerance,isThrottling);
+int get hashCode => Object.hash(runtimeType,currentPool,maxTolerance,maxPool,isThrottling);
 
 @override
 String toString() {
-  return 'Overheat(currentPool: $currentPool, maxTolerance: $maxTolerance, isThrottling: $isThrottling)';
+  return 'Overheat(currentPool: $currentPool, maxTolerance: $maxTolerance, maxPool: $maxPool, isThrottling: $isThrottling)';
 }
 
 
@@ -49,7 +50,7 @@ abstract mixin class $OverheatCopyWith<$Res>  {
   factory $OverheatCopyWith(Overheat value, $Res Function(Overheat) _then) = _$OverheatCopyWithImpl;
 @useResult
 $Res call({
- double currentPool, double maxTolerance, bool isThrottling
+ double currentPool, double maxTolerance, double maxPool, bool isThrottling
 });
 
 
@@ -66,10 +67,11 @@ class _$OverheatCopyWithImpl<$Res>
 
 /// Create a copy of Overheat
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? currentPool = null,Object? maxTolerance = null,Object? isThrottling = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? currentPool = null,Object? maxTolerance = null,Object? maxPool = null,Object? isThrottling = null,}) {
   return _then(_self.copyWith(
 currentPool: null == currentPool ? _self.currentPool : currentPool // ignore: cast_nullable_to_non_nullable
 as double,maxTolerance: null == maxTolerance ? _self.maxTolerance : maxTolerance // ignore: cast_nullable_to_non_nullable
+as double,maxPool: null == maxPool ? _self.maxPool : maxPool // ignore: cast_nullable_to_non_nullable
 as double,isThrottling: null == isThrottling ? _self.isThrottling : isThrottling // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
@@ -156,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double currentPool,  double maxTolerance,  bool isThrottling)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double currentPool,  double maxTolerance,  double maxPool,  bool isThrottling)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Overheat() when $default != null:
-return $default(_that.currentPool,_that.maxTolerance,_that.isThrottling);case _:
+return $default(_that.currentPool,_that.maxTolerance,_that.maxPool,_that.isThrottling);case _:
   return orElse();
 
 }
@@ -177,10 +179,10 @@ return $default(_that.currentPool,_that.maxTolerance,_that.isThrottling);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double currentPool,  double maxTolerance,  bool isThrottling)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double currentPool,  double maxTolerance,  double maxPool,  bool isThrottling)  $default,) {final _that = this;
 switch (_that) {
 case _Overheat():
-return $default(_that.currentPool,_that.maxTolerance,_that.isThrottling);case _:
+return $default(_that.currentPool,_that.maxTolerance,_that.maxPool,_that.isThrottling);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +199,10 @@ return $default(_that.currentPool,_that.maxTolerance,_that.isThrottling);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double currentPool,  double maxTolerance,  bool isThrottling)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double currentPool,  double maxTolerance,  double maxPool,  bool isThrottling)?  $default,) {final _that = this;
 switch (_that) {
 case _Overheat() when $default != null:
-return $default(_that.currentPool,_that.maxTolerance,_that.isThrottling);case _:
+return $default(_that.currentPool,_that.maxTolerance,_that.maxPool,_that.isThrottling);case _:
   return null;
 
 }
@@ -212,12 +214,14 @@ return $default(_that.currentPool,_that.maxTolerance,_that.isThrottling);case _:
 @JsonSerializable()
 
 class _Overheat implements Overheat {
-  const _Overheat({this.currentPool = 0.0, this.maxTolerance = 50.0, this.isThrottling = false});
+  const _Overheat({this.currentPool = 0.0, this.maxTolerance = 50.0, this.maxPool = 100.0, this.isThrottling = false});
   factory _Overheat.fromJson(Map<String, dynamic> json) => _$OverheatFromJson(json);
 
 @override@JsonKey() final  double currentPool;
 @override@JsonKey() final  double maxTolerance;
 // O_max, 5% of memory capacity typically
+@override@JsonKey() final  double maxPool;
+// Hard crash limit
 @override@JsonKey() final  bool isThrottling;
 
 /// Create a copy of Overheat
@@ -233,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Overheat&&(identical(other.currentPool, currentPool) || other.currentPool == currentPool)&&(identical(other.maxTolerance, maxTolerance) || other.maxTolerance == maxTolerance)&&(identical(other.isThrottling, isThrottling) || other.isThrottling == isThrottling));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Overheat&&(identical(other.currentPool, currentPool) || other.currentPool == currentPool)&&(identical(other.maxTolerance, maxTolerance) || other.maxTolerance == maxTolerance)&&(identical(other.maxPool, maxPool) || other.maxPool == maxPool)&&(identical(other.isThrottling, isThrottling) || other.isThrottling == isThrottling));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,currentPool,maxTolerance,isThrottling);
+int get hashCode => Object.hash(runtimeType,currentPool,maxTolerance,maxPool,isThrottling);
 
 @override
 String toString() {
-  return 'Overheat(currentPool: $currentPool, maxTolerance: $maxTolerance, isThrottling: $isThrottling)';
+  return 'Overheat(currentPool: $currentPool, maxTolerance: $maxTolerance, maxPool: $maxPool, isThrottling: $isThrottling)';
 }
 
 
@@ -253,7 +257,7 @@ abstract mixin class _$OverheatCopyWith<$Res> implements $OverheatCopyWith<$Res>
   factory _$OverheatCopyWith(_Overheat value, $Res Function(_Overheat) _then) = __$OverheatCopyWithImpl;
 @override @useResult
 $Res call({
- double currentPool, double maxTolerance, bool isThrottling
+ double currentPool, double maxTolerance, double maxPool, bool isThrottling
 });
 
 
@@ -270,10 +274,11 @@ class __$OverheatCopyWithImpl<$Res>
 
 /// Create a copy of Overheat
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? currentPool = null,Object? maxTolerance = null,Object? isThrottling = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? currentPool = null,Object? maxTolerance = null,Object? maxPool = null,Object? isThrottling = null,}) {
   return _then(_Overheat(
 currentPool: null == currentPool ? _self.currentPool : currentPool // ignore: cast_nullable_to_non_nullable
 as double,maxTolerance: null == maxTolerance ? _self.maxTolerance : maxTolerance // ignore: cast_nullable_to_non_nullable
+as double,maxPool: null == maxPool ? _self.maxPool : maxPool // ignore: cast_nullable_to_non_nullable
 as double,isThrottling: null == isThrottling ? _self.isThrottling : isThrottling // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
