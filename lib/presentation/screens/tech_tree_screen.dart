@@ -11,6 +11,8 @@ import '../providers/particle_provider.dart';
 import '../providers/shake_provider.dart';
 import '../theme/void_theme.dart';
 import '../../l10n/app_localizations.dart';
+import '../providers/sound_provider.dart';
+import '../providers/haptic_provider.dart';
 
 class TechTreeScreen extends ConsumerWidget {
   const TechTreeScreen({super.key});
@@ -37,8 +39,10 @@ class TechTreeScreen extends ConsumerWidget {
       status: NodeStatus.purchased, // Always active
       size: 80,
       onTap: () {
+        ref.read(hapticProvider).selection();
         final signal = ref.read(pipelineProvider).signal.currentAmount;
         if (signal >= 100000) { // Endgame threshold
+          ref.read(soundProvider).play('click');
           showDialog(
             context: context,
             builder: (context) => SimpleDialog(
@@ -87,6 +91,8 @@ class TechTreeScreen extends ConsumerWidget {
       status: NodeStatus.purchased, // Always available to upgrade
       size: 70,
       onTap: () {
+        ref.read(hapticProvider).light();
+        ref.read(soundProvider).play('click');
         ref.read(upgradesProvider.notifier).buyGenerator();
       },
     ));
@@ -125,6 +131,8 @@ class TechTreeScreen extends ConsumerWidget {
       status: NodeStatus.purchased,
       size: 70,
       onTap: () {
+        ref.read(hapticProvider).light();
+        ref.read(soundProvider).play('click');
         ref.read(upgradesProvider.notifier).buyFilter();
       },
     ));
@@ -225,7 +233,8 @@ class TechTreeScreen extends ConsumerWidget {
       onTap: () {
         if (status == NodeStatus.available) {
             _handleUnlock(ref, cost, update);
-            HapticFeedback.mediumImpact();
+            ref.read(hapticProvider).medium();
+            ref.read(soundProvider).play('upgrade');
             // Burst center screen for major unlock feel
             // We can't easily get screen center here without context, but we can approximate or use provider.
             // Actually, we can just burst at a random location or fixed center.

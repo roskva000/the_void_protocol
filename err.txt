@@ -1,9 +1,0 @@
-Because riverpod_generator >=3.0.0-dev.17 <3.0.0-dev.18 depends on source_gen ^3.0.0 and riverpod_generator >=3.0.0-dev.18 <3.0.0 depends on riverpod_annotation 3.0.0-dev.18, riverpod_generator >=3.0.0-dev.17 <3.0.0 requires source_gen ^3.0.0 or riverpod_annotation 3.0.0-dev.18.
-And because riverpod_generator <3.0.0-dev.17 depends on build ^2.0.0, riverpod_generator <=3.0.0-dev.18 requires source_gen ^3.0.0 or riverpod_annotation 3.0.0-dev.18 or build ^2.0.0.
-And because riverpod_generator >=3.0.0 <4.0.1 depends on analyzer >=7.0.0 <9.0.0 and json_serializable >=6.11.4 depends on analyzer >=9.0.0 <11.0.0, if riverpod_generator <4.0.1 and json_serializable >=6.11.4 then source_gen ^3.0.0 or riverpod_annotation 3.0.0-dev.18 or build ^2.0.0.
-And because json_serializable >=6.11.3 depends on both build ^4.0.3 and source_gen ^4.1.1, if json_serializable >=6.11.4 and riverpod_generator <4.0.1 then riverpod_annotation 3.0.0-dev.18.
-Because riverpod_generator >=4.0.1 <4.0.3 depends on riverpod_annotation 4.0.1 and riverpod_generator >=4.0.3 depends on riverpod_annotation 4.0.2, riverpod_generator >=4.0.1 requires riverpod_annotation 4.0.1 or 4.0.2.
-Thus, if json_serializable >=6.11.4 and riverpod_generator any then riverpod_annotation 3.0.0-dev.18 or 4.0.1 or 4.0.2.
-And because the_void_protocol depends on riverpod_annotation ^2.6.1, json_serializable >=6.11.4 is incompatible with riverpod_generator.
-So, because the_void_protocol depends on both json_serializable ^6.13.0 and riverpod_generator any, version solving failed.
-Failed to update packages.
